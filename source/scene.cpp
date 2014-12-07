@@ -17,13 +17,26 @@ ParticleType* Scene::GetParticle(int x, int y) {
     return type;
 }
 
+u32 Scene::GetData(int x, int y) {
+    if(x < 0 || y < 0 || x >= this->width || y >= this->height) {
+        return 0;
+    }
+
+    return this->data[x + (this->width * y)];
+}
+
 void Scene::SetParticle(int x, int y, ParticleType* type) {
+    this->SetParticle(x, y, type, 0);
+}
+
+void Scene::SetParticle(int x, int y, ParticleType* type, u32 data) {
     if(x < 0 || y < 0 || x >= this->width || y >= this->height) {
         return;
     }
 
     int index = x + (this->width * y);
     this->particles[index] = type;
+    this->data[index] = data;
 }
 
 void Scene::SetMoved(int x, int y, bool moved) {
@@ -31,7 +44,12 @@ void Scene::SetMoved(int x, int y, bool moved) {
         return;
     }
 
-    this->moved[x + (this->width * y)] = moved;
+    ParticleType* type = this->GetParticle(x, y);
+    if(type->HasData()) {
+        return;
+    }
+
+    this->SetParticle(x, y, type, (u32) moved);
 }
 
 void Scene::Clear() {
@@ -92,7 +110,7 @@ void Scene::Draw() {
     for(int y = 0; y < this->height; y++) {
         for(int x = 0; x < this->width; x++) {
             ParticleType* type = GetParticle(x, y);
-            if(type != ParticleType::NOTHING) {
+            if(type->IsDrawn()) {
                 if(!type->IsStill()) {
                     particleCt++;
                 }
@@ -114,7 +132,7 @@ bool Scene::HasMoved(int x, int y) {
         return false;
     }
 
-    return this->moved[x + (this->width * y)];
+    return !this->GetParticle(x, y)->HasData() && this->GetData(x, y) == 1;
 }
 
 void Scene::UpdateParticle(int x, int y) {

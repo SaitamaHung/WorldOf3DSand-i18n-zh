@@ -5,13 +5,15 @@
 #include <functional>
 
 #include "scene.h"
-#include "util.h"
+#include "types.h"
 
 const u8 STILL = 1;
 const u8 FLOATING = 2;
 const u8 BURNABLE = 4;
 const u8 BURNS_TO_EMBER = 8;
 const u8 SELECTABLE = 16;
+const u8 DATA = 32;
+const u8 NO_DRAW = 64;
 
 class Scene;
 
@@ -41,6 +43,7 @@ public:
     static ParticleType* SALT;
     static ParticleType* OIL;
     static ParticleType* SAND;
+    static ParticleType* ASH;
 
     // Combined
     static ParticleType* SALTWATER;
@@ -53,6 +56,10 @@ public:
 
     // Electricity
     static ParticleType* ELECTRICITY;
+
+    // Explosive
+    static ParticleType* EXPLOSION;
+    static ParticleType* GUNPOWDER;
 
     static std::vector<ParticleType*>* TYPES;
 
@@ -92,6 +99,14 @@ public:
 
     bool IsSelectable() {
         return CheckFlag(SELECTABLE);
+    }
+
+    bool HasData() {
+        return CheckFlag(DATA);
+    }
+
+    bool IsDrawn() {
+        return !CheckFlag(NO_DRAW);
     }
 
     std::function<void(Scene*, int, int)> GetPhysics() {

@@ -4,8 +4,9 @@
 
 #include "platform.h"
 #include "particle.h"
+#include "util.h"
 
-#define VERSION "1.0"
+#define VERSION "1.1"
 
 int main(int argc, char **argv) {
 	platform_init();
@@ -27,7 +28,7 @@ int main(int argc, char **argv) {
 	}
 
 	int buttonsPerRow = 10;
-	int buttonsPerColumn = 2;
+	int buttonsPerColumn = 3;
 	int buttonPadding = 1;
 	int buttonWidth = 24;
 	int buttonHeight = 12;

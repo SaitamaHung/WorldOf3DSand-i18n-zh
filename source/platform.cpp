@@ -7,6 +7,7 @@
 #include <3ds.h>
 
 #include "platform.h"
+#include "util.h"
 
 static unsigned char asciiData[128][8] = {
 		{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
@@ -332,14 +333,6 @@ void screen_fill(int x, int y, int width, int height, u8 r, u8 g, u8 b) {
 
 void screen_fill_c(int x, int y, int width, int height, Color color) {
 	screen_fill(x, y, width, height, color.r, color.g, color.b);
-}
-
-void screen_fill_r(Rectangle rectangle, u8 r, u8 g, u8 b) {
-	screen_fill(rectangle.x, rectangle.y, rectangle.width, rectangle.height, r, g, b);
-}
-
-void screen_fill_rc(Rectangle rectangle, Color color) {
-	screen_fill_r(rectangle, color.r, color.g, color.b);
 }
 
 int screen_get_str_width(const char* str) {

@@ -1,7 +1,7 @@
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
 
-#include "util.h"
+#include "types.h"
 
 #define printf platform_printf
 
@@ -37,8 +37,6 @@ void screen_draw(int x, int y, u8 r, u8 g, u8 b);
 void screen_draw_c(int x, int y, Color color);
 void screen_fill(int x, int y, int width, int height, u8 r, u8 g, u8 b);
 void screen_fill_c(int x, int y, int width, int height, Color color);
-void screen_fill_r(Rectangle rectangle, u8 r, u8 g, u8 b);
-void screen_fill_rc(Rectangle rectangle, Color color);
 int screen_get_str_width(const char* str);
 int screen_get_str_height(const char* str);
 void screen_draw_string(const char* string, int x, int y, u8 r, u8 g, u8 b);

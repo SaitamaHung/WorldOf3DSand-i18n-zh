@@ -1,6 +1,7 @@
 .idea
 build
 CMakeLists.txt
-WorldOf3DSand.3dsx
-WorldOf3DSand.elf
-WorldOf3DSand.smdh
+*.3dsx
+*.elf
+*.smdh
+*.zip

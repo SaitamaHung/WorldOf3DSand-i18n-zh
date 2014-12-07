@@ -2,6 +2,7 @@
 #define __SCENE_H__
 
 #include "particle.h"
+#include "types.h"
 
 class ParticleType;
 
@@ -12,13 +13,13 @@ public:
         this->height = height;
         this->particleCount = 0;
         this->particles = new ParticleType*[this->width * this->height];
-        this->moved = new bool[this->width * this->height];
-        std::fill(this->moved, this->moved + (this->width * this->height), false);
+        this->data = new u32[this->width * this->height];
+        std::fill(this->data, this->data + (this->width * this->height), 0);
     }
 
     ~Scene() {
-        delete(particles);
-        delete(moved);
+        delete(this->particles);
+        delete(this->data);
     }
 
     int GetWidth() {
@@ -34,7 +35,9 @@ public:
     }
 
     ParticleType* GetParticle(int x, int y);
+    u32 GetData(int x, int y);
     void SetParticle(int x, int y, ParticleType* type);
+    void SetParticle(int x, int y, ParticleType* type, u32 data);
     void SetMoved(int x, int y, bool moved);
     void Clear();
 
@@ -49,7 +52,7 @@ private:
     int height;
     int particleCount;
     ParticleType** particles;
-    bool* moved;
+    u32* data;
 
     bool HasMoved(int x, int y);
     void UpdateParticle(int x, int y);

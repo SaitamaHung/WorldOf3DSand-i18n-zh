@@ -4,9 +4,9 @@
 #include "platform.h"
 
 // Still
-ParticleType* ParticleType::NOTHING = new ParticleType("Erase", {0, 0, 0}, STILL | SELECTABLE);
+ParticleType* ParticleType::NOTHING = new ParticleType("Erase", {0, 0, 0}, STILL | SELECTABLE | NO_DRAW);
 ParticleType* ParticleType::WALL = new ParticleType("Wall", {100, 100, 100}, STILL | SELECTABLE);
-ParticleType* ParticleType::IRONWALL = new ParticleType("Iron Wall", {110, 110, 110}, STILL | SELECTABLE);
+ParticleType* ParticleType::IRONWALL = new ParticleType("Iron Wall", {140, 140, 140}, STILL | SELECTABLE);
 ParticleType* ParticleType::TORCH = new ParticleType("Torch", {139, 69, 19}, STILL | SELECTABLE);
 ParticleType* ParticleType::STOVE = new ParticleType("Stove", {74, 74, 74}, STILL | SELECTABLE);
 ParticleType* ParticleType::ICE = new ParticleType("Ice", {175, 238, 238}, STILL | SELECTABLE);
@@ -27,6 +27,7 @@ ParticleType* ParticleType::DIRT = new ParticleType("Dirt", {205, 175, 149}, SEL
 ParticleType* ParticleType::SALT = new ParticleType("Salt", {255, 255, 255}, SELECTABLE);
 ParticleType* ParticleType::OIL = new ParticleType("Oil", {128, 64, 64}, BURNABLE | SELECTABLE);
 ParticleType* ParticleType::SAND = new ParticleType("Sand", {238, 204, 128}, SELECTABLE);
+ParticleType* ParticleType::ASH = new ParticleType("Ash", {200, 200, 200});
 
 // Combined
 ParticleType* ParticleType::SALTWATER = new ParticleType("Salt Water", {65, 105, 225});
@@ -39,6 +40,10 @@ ParticleType* ParticleType::FIRE = new ParticleType("Fire", {255, 50, 50}, FLOAT
 
 // Electricity
 ParticleType* ParticleType::ELECTRICITY = new ParticleType("Electricity", {255, 255, 0}, SELECTABLE);
+
+// Explosive
+ParticleType* ParticleType::EXPLOSION = new ParticleType("Explosion", {150, 150, 150}, STILL | DATA);
+ParticleType* ParticleType::GUNPOWDER = new ParticleType("Gunpowder", {50, 50, 50}, SELECTABLE);
 
 std::vector<ParticleType *>* ParticleType::TYPES = new std::vector<ParticleType*>();
 
@@ -81,12 +86,15 @@ void ParticleType::InitParticles() {
     TYPES->push_back(SALT);
     TYPES->push_back(OIL);
     TYPES->push_back(SAND);
+    TYPES->push_back(ASH);
     TYPES->push_back(SALTWATER);
     TYPES->push_back(MUD);
     TYPES->push_back(ACID);
     TYPES->push_back(STEAM);
     TYPES->push_back(FIRE);
     TYPES->push_back(ELECTRICITY);
+    TYPES->push_back(EXPLOSION);
+    TYPES->push_back(GUNPOWDER);
 
     IRONWALL->SetPhysics([] (Scene* scene, int x, int y) {
         // Rust when in contact with other rust particles.
@@ -420,6 +428,10 @@ void ParticleType::InitParticles() {
         ParticleType* check = scene->GetParticle(rx, ry);
         if(check->IsBurnable()) {
             scene->SetParticle(rx, ry, check->BurnsToEmber() ? EMBER : FIRE);
+            // Leave behind ash.
+            if(scene->GetParticle(rx, ry - 1) == ParticleType::NOTHING && rand() % 2 == 0) {
+                scene->SetParticle(rx, ry - 1, ParticleType::ASH);
+            }
         }
     });
 
@@ -427,6 +439,58 @@ void ParticleType::InitParticles() {
         // Disappear.
         if(rand() % 2 == 0) {
             scene->SetParticle(x, y, NOTHING);
+        }
+    });
+
+    GUNPOWDER->SetPhysics([] (Scene* scene, int x, int y) {
+        // Explode in contact with fire.
+        bool explode = false;
+        if(scene->GetParticle(x - 1, y) == FIRE) {
+            explode = true;
+        } else if(scene->GetParticle(x + 1, y) == FIRE) {
+            explode = true;
+        } else if(scene->GetParticle(x, y - 1) == FIRE) {
+            explode = true;
+        } else if(scene->GetParticle(x, y + 1) == FIRE) {
+            explode = true;
+        }
+
+        if(explode) {
+            scene->SetParticle(x, y, ParticleType::EXPLOSION, 100);
+        }
+    });
+
+    EXPLOSION->SetPhysics([] (Scene* scene, int x, int y) {
+        u32 power = scene->GetData(x, y);
+        // Gradually fade out explosion particle.
+        if(power <= 1) {
+            if(power == 0) {
+                scene->SetParticle(x, y, ParticleType::NOTHING);
+            } else {
+                scene->SetParticle(x, y, ParticleType::EXPLOSION, power - 1);
+            }
+        } else {
+            // Spread explosion.
+            if(power != 0 && (rand() % power) <= power * 0.75f) {
+                if(scene->GetParticle(x, y + 1) != ParticleType::IRONWALL) {
+                    scene->SetParticle(x, y + 1, ParticleType::EXPLOSION, power - 1);
+                }
+
+                if(scene->GetParticle(x, y - 1) != ParticleType::IRONWALL) {
+                    scene->SetParticle(x, y - 1, ParticleType::EXPLOSION, power - 1);
+                }
+
+                if(scene->GetParticle(x + 1, y) != ParticleType::IRONWALL) {
+                    scene->SetParticle(x + 1, y, ParticleType::EXPLOSION, power - 1);
+                }
+
+                if(scene->GetParticle(x - 1, y) != ParticleType::IRONWALL) {
+                    scene->SetParticle(x - 1, y, ParticleType::EXPLOSION, power - 1);
+                }
+            }
+
+            // Set explosion particle to fade out.
+            scene->SetParticle(x, y, ParticleType::EXPLOSION, 1);
         }
     });
 }
