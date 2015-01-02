@@ -6,7 +6,7 @@
 #include "particle.h"
 #include "util.h"
 
-#define VERSION "1.1"
+#define VERSION "1.2"
 
 int main(int argc, char **argv) {
 	platform_init();

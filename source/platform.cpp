@@ -190,7 +190,7 @@ bool screen_end_draw() {
 }
 
 void screen_swap_buffers() {
-	gspWaitForVBlank();//has to be called before flushing
+	gspWaitForVBlank(); // Has to be called before flushing.
 	gfxFlushBuffers();
 	gfxSwapBuffers();
 }
