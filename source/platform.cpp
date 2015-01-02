@@ -3,7 +3,7 @@
 #include <sys/unistd.h>
 #include <fcntl.h>
 #include <algorithm>
-
+#include <string.h>
 #include <3ds.h>
 
 #include "platform.h"
@@ -190,10 +190,9 @@ bool screen_end_draw() {
 }
 
 void screen_swap_buffers() {
+	gspWaitForVBlank();//has to be called before flushing
 	gfxFlushBuffers();
 	gfxSwapBuffers();
-	gspWaitForVBlank();
-	platform_delay(1); // Seems to help with flickering.
 }
 
 int screen_get_width() {
