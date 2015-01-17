@@ -32,6 +32,8 @@ SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
 
+ICON            :=      resources/icon.png
+
 APP_TITLE = World of 3DSand
 APP_DESCRIPTION = World of Sand for the 3DS
 APP_AUTHOR = Steveice10
@@ -149,18 +151,18 @@ endif
 $(OUTPUT).3dsx	:	$(OUTPUT).elf
 $(OUTPUT).elf	:	$(OFILES)
 
-MAKEROM = $(TOPDIR)/cia/makerom
+MAKEROM = $(TOPDIR)/resources/makerom
 
 $(OUTPUT).cia: $(OUTPUT).elf
 	@cp $(OUTPUT).elf $(TARGET)_stripped.elf
 	@$(PREFIX)strip $(TARGET)_stripped.elf
-	$(MAKEROM) -f cia -o $(OUTPUT).cia -rsf $(TOPDIR)/cia/cia_workaround.rsf -target t -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/cia/icon.icn -banner $(TOPDIR)/cia/banner.bnr
+	$(MAKEROM) -f cia -o $(OUTPUT).cia -rsf $(TOPDIR)/resources/cia_workaround.rsf -target t -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/resources/icon.icn -banner $(TOPDIR)/resources/banner.bnr
 	@echo "built ... $(notdir $@)"
 
-$(OUTPUT).3ds: $(OUTPUT).elf $(TOPDIR)/cia/gw_workaround.rsf $(TOPDIR)/cia/banner.bnr $(TOPDIR)/cia/icon.icn
+$(OUTPUT).3ds: $(OUTPUT).elf $(TOPDIR)/resources/gw_workaround.rsf $(TOPDIR)/resources/banner.bnr $(TOPDIR)/resources/icon.icn
 	@cp $(OUTPUT).elf $(TARGET)_stripped.elf
 	@$(PREFIX)strip $(TARGET)_stripped.elf
-	$(MAKEROM) -f cci -o $(OUTPUT).3ds -rsf $(TOPDIR)/cia/gw_workaround.rsf -target d -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/cia/icon.icn -banner $(TOPDIR)/cia/banner.bnr
+	$(MAKEROM) -f cci -o $(OUTPUT).3ds -rsf $(TOPDIR)/resources/gw_workaround.rsf -target d -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/resources/icon.icn -banner $(TOPDIR)/resources/banner.bnr
 	@echo "built ... $(notdir $@)"
 
 #---------------------------------------------------------------------------------
