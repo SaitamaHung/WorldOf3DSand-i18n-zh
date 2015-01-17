@@ -2,9 +2,8 @@
 #include <stdlib.h>
 #include <string>
 
-#include "platform.h"
+#include "common.h"
 #include "particle.h"
-#include "util.h"
 
 #define VERSION "1.2"
 

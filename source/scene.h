@@ -2,7 +2,7 @@
 #define __SCENE_H__
 
 #include "particle.h"
-#include "types.h"
+#include "common.h"
 
 class ParticleType;
 

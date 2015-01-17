@@ -2,7 +2,6 @@
 #include <algorithm>
 
 #include "scene.h"
-#include "platform.h"
 
 ParticleType* Scene::GetParticle(int x, int y) {
     if(x < 0 || y < 0 || x >= this->width || y >= this->height) {

@@ -5,7 +5,7 @@
 #include <functional>
 
 #include "scene.h"
-#include "types.h"
+#include "common.h"
 
 const u8 STILL = 1;
 const u8 FLOATING = 2;
