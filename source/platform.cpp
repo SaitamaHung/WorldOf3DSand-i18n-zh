@@ -432,7 +432,7 @@ void platform_init() {
 	srvInit();
 	aptInit();
 	hidInit(NULL);
-	gfxInit();
+	gfxInitDefault();
 	fsInit();
 	sdmcInit();
 }
