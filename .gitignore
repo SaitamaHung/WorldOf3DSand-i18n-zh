@@ -5,3 +5,5 @@ CMakeLists.txt
 *.elf
 *.smdh
 *.zip
+*.cia
+*.3ds

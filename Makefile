@@ -144,10 +144,24 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 ifeq ($(strip $(NO_SMDH)),)
 .PHONY: all
-all	:	$(OUTPUT).3dsx $(OUTPUT).smdh
+all	:	$(OUTPUT).3dsx $(OUTPUT).smdh $(OUTPUT).cia $(OUTPUT).3ds
 endif
 $(OUTPUT).3dsx	:	$(OUTPUT).elf
 $(OUTPUT).elf	:	$(OFILES)
+
+MAKEROM = $(TOPDIR)/cia/makerom
+
+$(OUTPUT).cia: $(OUTPUT).elf
+	@cp $(OUTPUT).elf $(TARGET)_stripped.elf
+	@$(PREFIX)strip $(TARGET)_stripped.elf
+	$(MAKEROM) -f cia -o $(OUTPUT).cia -rsf $(TOPDIR)/cia/cia_workaround.rsf -target t -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/cia/icon.icn -banner $(TOPDIR)/cia/banner.bnr
+	@echo "built ... $(notdir $@)"
+
+$(OUTPUT).3ds: $(OUTPUT).elf $(TOPDIR)/cia/gw_workaround.rsf $(TOPDIR)/cia/banner.bnr $(TOPDIR)/cia/icon.icn
+	@cp $(OUTPUT).elf $(TARGET)_stripped.elf
+	@$(PREFIX)strip $(TARGET)_stripped.elf
+	$(MAKEROM) -f cci -o $(OUTPUT).3ds -rsf $(TOPDIR)/cia/gw_workaround.rsf -target d -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/cia/icon.icn -banner $(TOPDIR)/cia/banner.bnr
+	@echo "built ... $(notdir $@)"
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data
