@@ -32,10 +32,10 @@ SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
 
-ICON            :=      resources/icon.png
+ICON            :=      resources/icon48.png
 
 APP_TITLE = World of 3DSand
-APP_DESCRIPTION = World of Sand for the 3DS
+APP_DESCRIPTION = World of Sand for the 3DS.
 APP_AUTHOR = Steveice10
 
 #---------------------------------------------------------------------------------
@@ -63,6 +63,13 @@ LIBS	:= -lctru -lm
 # include and lib
 #---------------------------------------------------------------------------------
 LIBDIRS	:= $(CTRULIB) ./lib
+
+MAKEROM = $(TOPDIR)/resources/tools/makerom
+BANNER_TOOL = $(TOPDIR)/resources/tools/banner
+PREPARE_BANNER = python2 banner.py
+PREPARE_ICON24 = python2 icon.py
+PREPARE_ICON48 = python2 icon.py
+CREATE_BANNER = python2 create.py
 
 
 #---------------------------------------------------------------------------------
@@ -133,7 +140,7 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET).3ds $(TARGET).cia
+	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET).3ds $(TARGET).cia $(BANNER_TOOL)/banner.bnr $(BANNER_TOOL)/icon.icn
 
 
 #---------------------------------------------------------------------------------
@@ -151,18 +158,35 @@ endif
 $(OUTPUT).3dsx	:	$(OUTPUT).elf
 $(OUTPUT).elf	:	$(OFILES)
 
-MAKEROM = $(TOPDIR)/resources/makerom
+$(BANNER_TOOL)/banner.bnr: $(TOPDIR)/resources/banner.png $(TOPDIR)/resources/icon24.png $(TOPDIR)/resources/icon48.png
+	cp $(TOPDIR)/resources/banner.png $(BANNER_TOOL)/banner/banner.png
+	cp $(TOPDIR)/resources/icon24.png $(BANNER_TOOL)/icon24/icon24.png
+	cp $(TOPDIR)/resources/icon48.png $(BANNER_TOOL)/icon48/icon48.png
+	cd $(BANNER_TOOL)/banner; $(PREPARE_BANNER)
+	cd $(BANNER_TOOL)/icon24; $(PREPARE_ICON24)
+	cd $(BANNER_TOOL)/icon48; $(PREPARE_ICON48)
+	cd $(BANNER_TOOL); $(CREATE_BANNER)
+	rm $(BANNER_TOOL)/banner/banner.png
+	rm $(BANNER_TOOL)/banner/banner.cgfx
+	rm $(BANNER_TOOL)/banner/compressed.cgfx
+	rm $(BANNER_TOOL)/banner/banner.cbmd
+	rm $(BANNER_TOOL)/icon24/icon24.png
+	rm $(BANNER_TOOL)/icon24/icon24.ctpk
+	rm $(BANNER_TOOL)/icon48/icon48.png
+	rm $(BANNER_TOOL)/icon48/icon48.ctpk
+	
+$(BANNER_TOOL)/icon.icn: $(BANNER_TOOL)/banner.bnr
 
-$(OUTPUT).cia: $(OUTPUT).elf
+$(OUTPUT).cia: $(OUTPUT).elf $(TOPDIR)/resources/cia.rsf $(BANNER_TOOL)/banner.bnr $(BANNER_TOOL)/icon.icn
 	@cp $(OUTPUT).elf $(TARGET)_stripped.elf
 	@$(PREFIX)strip $(TARGET)_stripped.elf
-	$(MAKEROM) -f cia -o $(OUTPUT).cia -rsf $(TOPDIR)/resources/cia_workaround.rsf -target t -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/resources/icon.icn -banner $(TOPDIR)/resources/banner.bnr
+	$(MAKEROM) -f cia -o $(OUTPUT).cia -rsf $(TOPDIR)/resources/cia.rsf -target t -exefslogo -elf $(TARGET)_stripped.elf -icon $(BANNER_TOOL)/icon.icn -banner $(BANNER_TOOL)/banner.bnr
 	@echo "built ... $(notdir $@)"
 
-$(OUTPUT).3ds: $(OUTPUT).elf $(TOPDIR)/resources/gw_workaround.rsf $(TOPDIR)/resources/banner.bnr $(TOPDIR)/resources/icon.icn
+$(OUTPUT).3ds: $(OUTPUT).elf $(TOPDIR)/resources/3ds.rsf $(BANNER_TOOL)/banner.bnr $(BANNER_TOOL)/icon.icn
 	@cp $(OUTPUT).elf $(TARGET)_stripped.elf
 	@$(PREFIX)strip $(TARGET)_stripped.elf
-	$(MAKEROM) -f cci -o $(OUTPUT).3ds -rsf $(TOPDIR)/resources/gw_workaround.rsf -target d -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/resources/icon.icn -banner $(TOPDIR)/resources/banner.bnr
+	$(MAKEROM) -f cci -o $(OUTPUT).3ds -rsf $(TOPDIR)/resources/3ds.rsf -target d -exefslogo -elf $(TARGET)_stripped.elf -icon $(BANNER_TOOL)/icon.icn -banner $(BANNER_TOOL)/banner.bnr
 	@echo "built ... $(notdir $@)"
 
 #---------------------------------------------------------------------------------
