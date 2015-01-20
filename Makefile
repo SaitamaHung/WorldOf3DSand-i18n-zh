@@ -9,6 +9,11 @@ endif
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
 
+APP_ID = WorldOf3DSand
+APP_TITLE = World of 3DSand
+APP_DESCRIPTION = World of Sand for the 3DS.
+APP_AUTHOR = Steveice10
+
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
@@ -26,17 +31,14 @@ include $(DEVKITARM)/3ds_rules
 #     - icon.png
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
-TARGET		:=	$(notdir $(CURDIR))
+
+TARGET		:=	$(APP_ID)
 BUILD		:=	build
 SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
 
 ICON            :=      resources/icon48.png
-
-APP_TITLE = World of 3DSand
-APP_DESCRIPTION = World of Sand for the 3DS.
-APP_AUTHOR = Steveice10
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -51,7 +53,7 @@ CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
-CFLAGS +=       -std=c99
+CFLAGS +=       -std=gnu99
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)

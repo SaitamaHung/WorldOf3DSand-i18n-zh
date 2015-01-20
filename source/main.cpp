@@ -164,23 +164,23 @@ int main(int argc, char **argv) {
 		scene->Update();
 
 		// Prepare to draw.
-		screen_clear((u8) 0, (u8) 0, (u8) 0);
 		screen_begin_draw();
+		screen_clear((u8) 0, (u8) 0, (u8) 0);
 
 		// Draw the game scene.
 		scene->Draw();
 
 		// Draw GUI.
-		screen_fill_c(0, dashboardY, (width - dashboardWidth) / 2, dashboardHeight, dashboardSideColor);
-		screen_fill_c(dashboardX, dashboardY, dashboardWidth, dashboardHeight, dashboardColor);
-		screen_fill_c(dashboardX + dashboardWidth, dashboardY, (width - dashboardWidth) / 2, dashboardHeight, dashboardSideColor);
+		screen_fill(0, dashboardY, (width - dashboardWidth) / 2, dashboardHeight, dashboardSideColor.r, dashboardSideColor.g, dashboardSideColor.b);
+		screen_fill(dashboardX, dashboardY, dashboardWidth, dashboardHeight, dashboardColor.r, dashboardColor.g, dashboardColor.b);
+		screen_fill(dashboardX + dashboardWidth, dashboardY, (width - dashboardWidth) / 2, dashboardHeight, dashboardColor.r, dashboardColor.g, dashboardColor.b);
 		int index = 0;
 		for(std::vector<ParticleType*>::iterator i = ParticleType::TYPES->begin(); i != ParticleType::TYPES->end(); i++) {
 			ParticleType* type = *i;
 			if(type->IsSelectable()) {
 				int x = ((index % buttonsPerRow) * paddedButtonWidth) + buttonBaseX;
 				int y = ((index / buttonsPerRow) * paddedButtonHeight) + buttonBaseY;
-				screen_fill_c(x, y, buttonWidth, buttonHeight, type->GetColor());
+				screen_fill(x, y, buttonWidth, buttonHeight, type->GetColor().r, type->GetColor().g, type->GetColor().b);
 				if(type == selectedType) {
 					screen_fill(x, y, buttonWidth, buttonPadding, 0, 0, 0);
 					screen_fill(x + buttonWidth - buttonPadding, y, buttonPadding, buttonHeight, 0, 0, 0);
@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
 				x = width - x - buttonWidth;
 			}
 
-			screen_fill_c(x, y, buttonWidth, buttonHeight, emitTypes[emitter]->GetColor());
+			screen_fill(x, y, buttonWidth, buttonHeight, emitTypes[emitter]->GetColor().r, emitTypes[emitter]->GetColor().g, emitTypes[emitter]->GetColor().b);
 			if(emit[emitter]) {
 				screen_fill(x, y, buttonWidth, buttonPadding, 0, 0, 0);
 				screen_fill(x + buttonWidth - buttonPadding, y, buttonPadding, buttonHeight, 0, 0, 0);
@@ -226,8 +226,8 @@ int main(int argc, char **argv) {
 		}
 
 		// Prepare to draw on-screen info.
-		screen_clear_info((u8) 0, (u8) 0, (u8) 0);
 		screen_begin_draw_info();
+		screen_clear((u8) 0, (u8) 0, (u8) 0);
 
 		// Draw on-screen info.
 		screen_draw_string(sdprintf("World of 3DSand v%s", VERSION), 0, 0, 255, 255, 255);

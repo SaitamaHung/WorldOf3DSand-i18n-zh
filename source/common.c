@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <sys/unistd.h>
 #include <fcntl.h>
-#include <algorithm>
 #include <string.h>
+
 #include <3ds.h>
 
 #include "common.h"
@@ -156,7 +156,7 @@ PAD_KEY buttonMap[13] = {
 };
 
 const int defaultBufferSize = 100;
-static char defaultBuffer[defaultBufferSize];
+static char defaultBuffer[100];
 
 char* sdprintf(const char* format, ...) {
 	va_list args;
@@ -173,11 +173,13 @@ char* vsdprintf(const char* format, va_list args) {
 	char* ret = NULL;
 	int len = vsnprintf(defaultBuffer, defaultBufferSize, format, args);
 	if(len >= defaultBufferSize) {
-		char buffer[len];
+		char* buffer = (char*) malloc(len * sizeof(char));
 		vsnprintf(buffer, (size_t) len, format, copy);
 		ret = buffer;
 	} else {
-		ret = strdup(defaultBuffer);
+		char* buffer = (char*) malloc(defaultBufferSize * sizeof(char));
+		strcpy(buffer, defaultBuffer);
+		ret = buffer;
 	}
 
 	va_end(copy);
@@ -217,10 +219,15 @@ bool screen_end_draw() {
 	return true;
 }
 
-void screen_swap_buffers() {
-	gspWaitForVBlank(); // Has to be called before flushing.
+void screen_swap_buffers_quick() {
 	gfxFlushBuffers();
 	gfxSwapBuffers();
+}
+
+void screen_swap_buffers() {
+	gfxFlushBuffers();
+	gfxSwapBuffers();
+	gspWaitForVBlank();
 }
 
 int screen_get_width() {
@@ -311,10 +318,6 @@ void screen_draw(int x, int y, u8 r, u8 g, u8 b) {
 	fb[idx + 2] = r;
 }
 
-void screen_draw_c(int x, int y, Color color) {
-	screen_draw(x, y, color.r, color.g, color.b);
-}
-
 void screen_fill(int x, int y, int width, int height, u8 r, u8 g, u8 b) {
 	if(fb == NULL) {
 		return;
@@ -356,10 +359,6 @@ void screen_fill(int x, int y, int width, int height, u8 r, u8 g, u8 b) {
 		memcpy(fbAddr, colorLine, (size_t) (height * 3));
 		fbAddr += sheight * 3;
 	}
-}
-
-void screen_fill_c(int x, int y, int width, int height, Color color) {
-	screen_fill(x, y, width, height, color.r, color.g, color.b);
 }
 
 int screen_get_str_width(const char* str) {
@@ -406,32 +405,22 @@ void screen_draw_string(const char* string, int x, int y, u8 r, u8 g, u8 b) {
 	}
 }
 
-void screen_draw_string_c(const char* string, int x, int y, Color color) {
-	screen_draw_string(string, x, y, color.r, color.g, color.b);
-}
-
 void screen_clear(u8 r, u8 g, u8 b) {
-	bool end = screen_begin_draw();
 	screen_fill(0, 0, screen_get_width(), screen_get_height(), r, g, b);
-	if(end) {
+}
+
+void screen_clear_all() {
+	for(int i = 0; i < 2; i++) {
+		screen_begin_draw();
+		screen_clear(0, 0, 0);
 		screen_end_draw();
-	}
-}
 
-void screen_clear_c(Color color) {
-	screen_clear(color.r, color.g, color.b);
-}
-
-void screen_clear_info(u8 r, u8 g, u8 b) {
-	bool end = screen_begin_draw_info();
-	screen_fill(0, 0, screen_get_width(), screen_get_height(), r, g, b);
-	if(end) {
+		screen_begin_draw_info();
+		screen_clear(0, 0, 0);
 		screen_end_draw();
-	}
-}
 
-void screen_clear_info_c(Color color) {
-	screen_clear_info(color.r, color.g, color.b);
+		screen_swap_buffers();
+	}
 }
 
 void input_poll() {
@@ -453,7 +442,207 @@ bool input_is_held(Button button) {
 Touch input_get_touch() {
 	touchPosition pos;
 	hidTouchRead(&pos);
-	return {pos.px, pos.py};
+
+	Touch touch;
+	touch.x = pos.px;
+	touch.y = pos.py;
+	return touch;
+}
+
+bool amInitialized = false;
+bool nsInitialized = false;
+
+bool am_prepare() {
+	if(!amInitialized) {
+		if(amInit() != 0) {
+			return false;
+		}
+
+		amInitialized = true;
+	}
+
+	return true;
+}
+
+bool ns_prepare() {
+	if(!nsInitialized) {
+		if(nsInit() != 0) {
+			return false;
+		}
+
+		nsInitialized = true;
+	}
+
+	return true;
+}
+
+u8 app_mediatype_to_byte(MediaType mediaType) {
+	return mediaType == NAND ? mediatype_NAND : mediatype_SDMC;
+}
+
+AppPlatform app_platform_from_id(u16 id) {
+	switch(id) {
+		case 1:
+			return WII;
+		case 3:
+			return DSI;
+		case 4:
+			return THREEDS;
+		case 5:
+			return WIIU;
+		default:
+			return UNKNOWN_PLATFORM;
+	}
+}
+
+AppCategory app_category_from_id(u16 id) {
+	if((id & 0x2) == 0x2) {
+		return DLC;
+	} else if((id & 0x6) == 0x6) {
+		return PATCH;
+	} else if((id & 0x10) == 0x10) {
+		return SYSTEM;
+	} else if((id & 0x8000) == 0x8000) {
+		return TWL;
+	}
+
+	return APP;
+}
+
+const char* app_get_platform_name(AppPlatform platform) {
+	switch(platform) {
+		case WII:
+			return "Wii";
+		case DSI:
+			return "DSi";
+		case THREEDS:
+			return "3DS";
+		case WIIU:
+			return "Wii U";
+		default:
+			return "Unknown";
+	}
+}
+
+const char* app_get_category_name(AppCategory category) {
+	switch(category) {
+		case APP:
+			return "App";
+		case DLC:
+			return "DLC";
+		case PATCH:
+			return "Patch";
+		case SYSTEM:
+			return "System";
+		case TWL:
+			return "TWL";
+		default:
+			return "Unknown";
+	}
+}
+
+App* app_list(MediaType mediaType, u32* count) {
+	if(!am_prepare()) {
+		return NULL;
+	}
+
+	u32 titleCount;
+	AM_GetTitleCount(app_mediatype_to_byte(mediaType), &titleCount);
+	if(count != NULL) {
+		*count = titleCount;
+	}
+
+	u64 titleIds[titleCount];
+	AM_GetTitleList(app_mediatype_to_byte(mediaType), titleCount, titleIds);
+
+	App* titles = (App*) malloc(titleCount * sizeof(App));
+	for(int i = 0; i < titleCount; i++) {
+		u64 titleId = titleIds[i];
+		App app;
+		app.titleId = titleId;
+		app.uniqueId = ((u32*) &titleId)[0];
+		AM_GetTitleProductCode(app_mediatype_to_byte(mediaType), titleId, app.productCode);
+		if(strcmp(app.productCode, "") == 0) {
+			strcpy(app.productCode, "<N/A>");
+		}
+
+		app.mediaType = mediaType;
+		app.platform = app_platform_from_id(((u16*) &titleId)[3]);
+		app.category = app_category_from_id(((u16*) &titleId)[2]);
+
+		titles[i] = app;
+	}
+
+	return titles;
+}
+
+bool app_install(MediaType mediaType, const char* path, bool (*onProgress)(int progress)) {
+	if(!am_prepare()) {
+		return false;
+	}
+
+	if(onProgress != NULL) {
+		onProgress(0);
+	}
+
+	FS_archive sdmcArchive = (FS_archive) {ARCH_SDMC, (FS_path) {PATH_EMPTY, 1, (u8*) ""}};
+	FSUSER_OpenArchive(NULL, &sdmcArchive);
+	Handle fileHandle;
+	u64 size;
+
+	if(FSUSER_OpenFile(NULL, &fileHandle, sdmcArchive, FS_makePath(PATH_CHAR, path + 5), FS_OPEN_READ, FS_ATTRIBUTE_NONE) != 0) {
+		return false;
+	}
+
+	FSFILE_GetSize(fileHandle, &size);
+
+	Handle ciaHandle;
+	AM_StartCiaInstall(app_mediatype_to_byte(mediaType), &ciaHandle);
+	FSFILE_SetSize(ciaHandle, size);
+
+	u32 bufSize = 1024 * 256; // 256KB
+	void* buf = malloc(bufSize);
+	bool cancelled = false;
+	for(u64 pos = 0; pos < size; pos += bufSize) {
+		if(onProgress != NULL && !onProgress((int) ((pos / (float) size) * 100))) {
+			AM_CancelCIAInstall(&ciaHandle);
+			cancelled = true;
+			break;
+		}
+
+		u32 bytesRead;
+		FSFILE_Read(fileHandle, &bytesRead, pos, buf, bufSize);
+		FSFILE_Write(ciaHandle, NULL, pos, buf, bytesRead, FS_WRITE_NOFLUSH);
+	}
+
+	if(!cancelled) {
+		if(onProgress != NULL) {
+			onProgress(100);
+		}
+
+		AM_FinishCiaInstall(app_mediatype_to_byte(mediaType), &ciaHandle);
+	}
+
+	free(buf);
+	FSFILE_Close(fileHandle);
+	FSUSER_CloseArchive(NULL, &sdmcArchive);
+	return !cancelled;
+}
+
+bool app_delete(MediaType mediaType, App app) {
+	if(!am_prepare()) {
+		return false;
+	}
+
+	return AM_DeleteAppTitle(app_mediatype_to_byte(mediaType), app.titleId) == 0;
+}
+
+bool app_launch(MediaType mediaType, App app) {
+	if(!ns_prepare()) {
+		return false;
+	}
+
+	return NS_RebootToTitle(mediaType, app.titleId) == 0;
 }
 
 void platform_init() {
@@ -466,6 +655,16 @@ void platform_init() {
 }
 
 void platform_cleanup() {
+	if(amInitialized) {
+		amExit();
+		amInitialized = false;
+	}
+
+	if(nsInitialized) {
+		nsExit();
+		nsInitialized = false;
+	}
+
 	sdmcExit();
 	fsExit();
 	gfxExit();
@@ -496,8 +695,5 @@ void platform_printf(const char* format, ...) {
 	char* str = vsdprintf(format, args);
 	va_end(args);
 	platform_print(str);
-}
-
-char* platform_get_path(const char* path) {
-	return sdprintf("sdmc:/%s", path);
+	free(str);
 }

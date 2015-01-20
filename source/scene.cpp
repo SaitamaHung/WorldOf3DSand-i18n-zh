@@ -118,7 +118,7 @@ void Scene::Draw() {
                     SetMoved(x, y, false);
                 }
 
-                screen_draw_c(x,y,type->GetColor());
+                screen_draw(x, y, type->GetColor().r, type->GetColor().g, type->GetColor().b);
             }
         }
     }
