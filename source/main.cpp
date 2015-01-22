@@ -8,7 +8,9 @@
 #define VERSION "1.2"
 
 int main(int argc, char **argv) {
-	platform_init();
+	if(!platform_init()) {
+		return 0;
+	}
 
 	ParticleType::InitParticles();
 
