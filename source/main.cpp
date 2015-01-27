@@ -1,8 +1,10 @@
 #include <math.h>
 #include <stdlib.h>
-#include <string>
 
-#include "common.h"
+#include <string>
+#include <sstream>
+
+#include "common.hpp"
 #include "particle.h"
 
 #define VERSION "1.2"
@@ -14,8 +16,10 @@ int main(int argc, char **argv) {
 
 	ParticleType::InitParticles();
 
-	int width = screen_get_width();
-	int height = screen_get_height();
+    screen_begin_draw(BOTTOM_SCREEN);
+    int sceneScreenWidth = screen_get_width();
+    int sceneScreenHeight = screen_get_height();
+    screen_end_draw();
 
 	Color dashboardColor = {155, 155, 155};
 	Color dashboardSideColor = {50, 50, 50};
@@ -38,13 +42,13 @@ int main(int argc, char **argv) {
 
 	int dashboardWidth = buttonsPerRow * paddedButtonWidth + buttonPadding;
 	int dashboardHeight = buttonsPerColumn * paddedButtonHeight + buttonPadding;
-	int dashboardX = (width - dashboardWidth) / 2;
-	int dashboardY = height - dashboardHeight;
+	int dashboardX = (sceneScreenWidth - dashboardWidth) / 2;
+	int dashboardY = sceneScreenHeight - dashboardHeight;
 
 	int buttonBaseX = dashboardX + buttonPadding;
 	int buttonBaseY = dashboardY + buttonPadding;
 
-	Scene* scene = new Scene(width, height - dashboardHeight);
+	Scene* scene = new Scene(sceneScreenWidth, sceneScreenHeight - dashboardHeight);
 	ParticleType* selectedType = ParticleType::WALL;
 
 	int penSize = 2;
@@ -129,10 +133,10 @@ int main(int argc, char **argv) {
 				}
 			} else if(touch.y > dashboardY && touch.y < dashboardY + dashboardHeight) {
 				for(int emitter = 0; emitter < emitters; emitter++) {
-					int x = ((width - dashboardWidth) / 2 - (paddedButtonWidth + buttonPadding)) / 2;
+					int x = ((sceneScreenWidth - dashboardWidth) / 2 - (paddedButtonWidth + buttonPadding)) / 2;
 					int y = buttonBaseY + paddedButtonHeight * (emitter % 2);
 					if(emitter >= emitters / 2) {
-						x = width - x - buttonWidth;
+						x = sceneScreenWidth - x - buttonWidth;
 					}
 
 					if(touch.x > x && touch.y > y && touch.x <= x + buttonWidth && touch.y <= y + buttonHeight) {
@@ -166,16 +170,16 @@ int main(int argc, char **argv) {
 		scene->Update();
 
 		// Prepare to draw.
-		screen_begin_draw();
-		screen_clear((u8) 0, (u8) 0, (u8) 0);
+		screen_begin_draw(BOTTOM_SCREEN);
+		screen_clear(0, 0, 0);
 
 		// Draw the game scene.
 		scene->Draw();
 
 		// Draw GUI.
-		screen_fill(0, dashboardY, (width - dashboardWidth) / 2, dashboardHeight, dashboardSideColor.r, dashboardSideColor.g, dashboardSideColor.b);
+		screen_fill(0, dashboardY, (sceneScreenWidth - dashboardWidth) / 2, dashboardHeight, dashboardSideColor.r, dashboardSideColor.g, dashboardSideColor.b);
 		screen_fill(dashboardX, dashboardY, dashboardWidth, dashboardHeight, dashboardColor.r, dashboardColor.g, dashboardColor.b);
-		screen_fill(dashboardX + dashboardWidth, dashboardY, (width - dashboardWidth) / 2, dashboardHeight, dashboardColor.r, dashboardColor.g, dashboardColor.b);
+		screen_fill(dashboardX + dashboardWidth, dashboardY, (sceneScreenWidth - dashboardWidth) / 2, dashboardHeight, dashboardColor.r, dashboardColor.g, dashboardColor.b);
 		int index = 0;
 		for(std::vector<ParticleType*>::iterator i = ParticleType::TYPES->begin(); i != ParticleType::TYPES->end(); i++) {
 			ParticleType* type = *i;
@@ -195,10 +199,10 @@ int main(int argc, char **argv) {
 		}
 
 		for(int emitter = 0; emitter < emitters; emitter++) {
-			int x = ((width - dashboardWidth) / 2 - (paddedButtonWidth + buttonPadding)) / 2;
+			int x = ((sceneScreenWidth - dashboardWidth) / 2 - (paddedButtonWidth + buttonPadding)) / 2;
 			int y = buttonBaseY + paddedButtonHeight * (emitter % 2);
 			if(emitter >= emitters / 2) {
-				x = width - x - buttonWidth;
+				x = sceneScreenWidth - x - buttonWidth;
 			}
 
 			screen_fill(x, y, buttonWidth, buttonHeight, emitTypes[emitter]->GetColor().r, emitTypes[emitter]->GetColor().g, emitTypes[emitter]->GetColor().b);
@@ -213,32 +217,50 @@ int main(int argc, char **argv) {
 		// Clean up after drawing.
 		screen_end_draw();
 
-		// Prepare on-screen info.
-		std::string emittersEnabled = "";
-		bool one = false;
-		for(int emitter = 0; emitter < emitters; emitter++) {
-			if(emit[emitter]) {
-				if(one) {
-					emittersEnabled += ", ";
-				}
-
-				one = true;
-				emittersEnabled += emitTypes[emitter]->GetName();
-			}
-		}
-
 		// Prepare to draw on-screen info.
-		screen_begin_draw_info();
+		screen_begin_draw(TOP_SCREEN);
 		screen_clear((u8) 0, (u8) 0, (u8) 0);
 
 		// Draw on-screen info.
-		screen_draw_string(sdprintf("World of 3DSand v%s", VERSION), 0, 0, 255, 255, 255);
-		screen_draw_string(sdprintf("FPS: %i", fps), 0, 12, 255, 255, 255);
-		screen_draw_string(sdprintf("Particle count: %i", scene->GetParticleCount()), 0, 24, 255, 255, 255);
-		screen_draw_string(sdprintf("Selected Particle: %s", selectedType->GetName()), 0, 36, 255, 255, 255);
-		screen_draw_string(sdprintf("Pen Size: %i", penSize), 0, 48, 255, 255, 255);
-		screen_draw_string(sdprintf("Emitters: %s", emittersEnabled.c_str()), 0, 60, 255, 255, 255);
-		screen_draw_string(sdprintf("Emitter Density: %f", emitDensity), 0, 72, 255, 255, 255);
+        std::stringstream stream;
+        stream << "World of 3DSand v" << VERSION;
+		screen_draw_string(stream.str(), 0, 0, 255, 255, 255);
+        stream.str("");
+        stream.clear();
+        stream << "FPS: " << fps;
+		screen_draw_string(stream.str(), 0, 12, 255, 255, 255);
+        stream.str("");
+        stream.clear();
+        stream << "Particle count: " << scene->GetParticleCount();
+		screen_draw_string(stream.str(), 0, 24, 255, 255, 255);
+        stream.str("");
+        stream.clear();
+        stream << "Selected Particle: " << selectedType->GetName();
+		screen_draw_string(stream.str(), 0, 36, 255, 255, 255);
+        stream.str("");
+        stream.clear();
+        stream << "Pen Size: " << penSize;
+		screen_draw_string(stream.str(), 0, 48, 255, 255, 255);
+        stream.str("");
+        stream.clear();
+        stream << "Emitters: ";
+        bool one = false;
+        for(int emitter = 0; emitter < emitters; emitter++) {
+            if(emit[emitter]) {
+                if(one) {
+                    stream << ", ";
+                }
+
+                one = true;
+                stream << emitTypes[emitter]->GetName();
+            }
+        }
+
+		screen_draw_string(stream.str(), 0, 60, 255, 255, 255);
+        stream.str("");
+        stream.clear();
+        stream << "Emitter Density: " << emitDensity;
+		screen_draw_string(stream.str(), 0, 72, 255, 255, 255);
 
 		screen_draw_string("Touch to draw particles.", 0, 96, 255, 255, 255);
 		screen_draw_string("Press Start to exit.", 0, 108, 255, 255, 255);
