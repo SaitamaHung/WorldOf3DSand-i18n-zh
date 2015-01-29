@@ -14,12 +14,21 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+	std::stringstream controlStream;
+	controlStream << "Touch to draw particles." << "\n";
+	controlStream << "Press Start to exit." << "\n";
+	controlStream << "Press Select to take a screenshot." << "\n";
+	controlStream << "Press B to clear the screen." << "\n";
+	controlStream << "Press Up/Down to modify the pen size." << "\n";
+	controlStream << "Press Left/Right to modify the emitter density." << "\n";
+	const std::string controls = controlStream.str();
+
 	ParticleType::InitParticles();
 
-    screen_begin_draw(BOTTOM_SCREEN);
-    int sceneScreenWidth = screen_get_width();
-    int sceneScreenHeight = screen_get_height();
-    screen_end_draw();
+	screen_begin_draw(BOTTOM_SCREEN);
+	int sceneScreenWidth = screen_get_width();
+	int sceneScreenHeight = screen_get_height();
+	screen_end_draw();
 
 	Color dashboardColor = {155, 155, 155};
 	Color dashboardSideColor = {50, 50, 50};
@@ -222,52 +231,29 @@ int main(int argc, char **argv) {
 		screen_clear((u8) 0, (u8) 0, (u8) 0);
 
 		// Draw on-screen info.
-        std::stringstream stream;
-        stream << "World of 3DSand v" << VERSION;
+		std::stringstream stream;
+		stream << "World of 3DSand v" << VERSION << "\n";
+		stream << "FPS: " << fps << "\n";
+		stream << "Particle count: " << scene->GetParticleCount() << "\n";
+		stream << "Selected Particle: " << selectedType->GetName() << "\n";
+		stream << "Pen Size: " << penSize << "\n";
+		stream << "Emitters: ";
+		bool one = false;
+		for(int emitter = 0; emitter < emitters; emitter++) {
+			if(emit[emitter]) {
+				if(one) {
+					stream << ", ";
+				}
+
+				one = true;
+				stream << emitTypes[emitter]->GetName();
+			}
+		}
+
+		stream << "\n";
+		stream << "Emitter Density: " << emitDensity << "\n";
+		stream << "\n" << controls;
 		screen_draw_string(stream.str(), 0, 0, 255, 255, 255);
-        stream.str("");
-        stream.clear();
-        stream << "FPS: " << fps;
-		screen_draw_string(stream.str(), 0, 12, 255, 255, 255);
-        stream.str("");
-        stream.clear();
-        stream << "Particle count: " << scene->GetParticleCount();
-		screen_draw_string(stream.str(), 0, 24, 255, 255, 255);
-        stream.str("");
-        stream.clear();
-        stream << "Selected Particle: " << selectedType->GetName();
-		screen_draw_string(stream.str(), 0, 36, 255, 255, 255);
-        stream.str("");
-        stream.clear();
-        stream << "Pen Size: " << penSize;
-		screen_draw_string(stream.str(), 0, 48, 255, 255, 255);
-        stream.str("");
-        stream.clear();
-        stream << "Emitters: ";
-        bool one = false;
-        for(int emitter = 0; emitter < emitters; emitter++) {
-            if(emit[emitter]) {
-                if(one) {
-                    stream << ", ";
-                }
-
-                one = true;
-                stream << emitTypes[emitter]->GetName();
-            }
-        }
-
-		screen_draw_string(stream.str(), 0, 60, 255, 255, 255);
-        stream.str("");
-        stream.clear();
-        stream << "Emitter Density: " << emitDensity;
-		screen_draw_string(stream.str(), 0, 72, 255, 255, 255);
-
-		screen_draw_string("Touch to draw particles.", 0, 96, 255, 255, 255);
-		screen_draw_string("Press Start to exit.", 0, 108, 255, 255, 255);
-		screen_draw_string("Press Select to take a screenshot.", 0, 120, 255, 255, 255);
-		screen_draw_string("Press B to clear the screen.", 0, 132, 255, 255, 255);
-		screen_draw_string("Press Up/Down to modify the pen size.", 0, 144, 255, 255, 255);
-		screen_draw_string("Press Left/Right to modify the emitter density.", 0, 156, 255, 255, 255);
 
 		// Clean up after drawing.
 		screen_end_draw();
