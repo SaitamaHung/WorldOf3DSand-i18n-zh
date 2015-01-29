@@ -4,8 +4,9 @@
 #include <vector>
 #include <functional>
 
+#include <ctrcommon/common.hpp>
+
 #include "scene.h"
-#include "common.hpp"
 
 const u8 STILL = 1;
 const u8 FLOATING = 2;

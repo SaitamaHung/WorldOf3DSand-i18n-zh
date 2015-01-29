@@ -4,7 +4,8 @@
 #include <string>
 #include <sstream>
 
-#include "common.hpp"
+#include <ctrcommon/common.hpp>
+
 #include "particle.h"
 
 #define VERSION "1.2"
