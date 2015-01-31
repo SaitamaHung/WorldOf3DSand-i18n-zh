@@ -27,8 +27,8 @@ int main(int argc, char **argv) {
 	ParticleType::InitParticles();
 
 	screen_begin_draw(BOTTOM_SCREEN);
-	int sceneScreenWidth = screen_get_width();
-	int sceneScreenHeight = screen_get_height();
+	u16 sceneScreenWidth = screen_get_width();
+	u16 sceneScreenHeight = screen_get_height();
 	screen_end_draw();
 
 	Color dashboardColor = {155, 155, 155};
@@ -42,16 +42,16 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	int buttonsPerRow = 10;
-	int buttonsPerColumn = 3;
-	int buttonPadding = 1;
-	int buttonWidth = 24;
-	int buttonHeight = 12;
-	int paddedButtonWidth = buttonWidth + buttonPadding;
-	int paddedButtonHeight = buttonHeight + buttonPadding;
+	u16 buttonsPerRow = 10;
+	u16 buttonsPerColumn = 3;
+	u16 buttonPadding = 1;
+	u16 buttonWidth = 24;
+	u16 buttonHeight = 12;
+	u16 paddedButtonWidth = buttonWidth + buttonPadding;
+	u16 paddedButtonHeight = buttonHeight + buttonPadding;
 
-	int dashboardWidth = buttonsPerRow * paddedButtonWidth + buttonPadding;
-	int dashboardHeight = buttonsPerColumn * paddedButtonHeight + buttonPadding;
+	u16 dashboardWidth = buttonsPerRow * paddedButtonWidth + buttonPadding;
+	u16 dashboardHeight = buttonsPerColumn * paddedButtonHeight + buttonPadding;
 	int dashboardX = (sceneScreenWidth - dashboardWidth) / 2;
 	int dashboardY = sceneScreenHeight - dashboardHeight;
 
@@ -187,9 +187,9 @@ int main(int argc, char **argv) {
 		scene->Draw();
 
 		// Draw GUI.
-		screen_fill(0, dashboardY, (sceneScreenWidth - dashboardWidth) / 2, dashboardHeight, dashboardSideColor.r, dashboardSideColor.g, dashboardSideColor.b);
+		screen_fill(0, dashboardY, (u16) ((sceneScreenWidth - dashboardWidth) / 2), dashboardHeight, dashboardSideColor.r, dashboardSideColor.g, dashboardSideColor.b);
 		screen_fill(dashboardX, dashboardY, dashboardWidth, dashboardHeight, dashboardColor.r, dashboardColor.g, dashboardColor.b);
-		screen_fill(dashboardX + dashboardWidth, dashboardY, (sceneScreenWidth - dashboardWidth) / 2, dashboardHeight, dashboardColor.r, dashboardColor.g, dashboardColor.b);
+		screen_fill(dashboardX + dashboardWidth, dashboardY, (u16) ((sceneScreenWidth - dashboardWidth) / 2), dashboardHeight, dashboardColor.r, dashboardColor.g, dashboardColor.b);
 		int index = 0;
 		for(std::vector<ParticleType*>::iterator i = ParticleType::TYPES->begin(); i != ParticleType::TYPES->end(); i++) {
 			ParticleType* type = *i;
