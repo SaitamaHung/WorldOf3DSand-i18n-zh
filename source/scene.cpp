@@ -3,12 +3,12 @@
 
 #include "scene.h"
 
-ParticleType* Scene::GetParticle(int x, int y) {
+ParticleType *Scene::GetParticle(int x, int y) {
     if(x < 0 || y < 0 || x >= this->width || y >= this->height) {
         return ParticleType::NOTHING;
     }
 
-    ParticleType* type = this->particles[x + (this->width * y)];
+    ParticleType *type = this->particles[x + (this->width * y)];
     if(type == NULL) {
         return ParticleType::NOTHING;
     }
@@ -24,11 +24,11 @@ u32 Scene::GetData(int x, int y) {
     return this->data[x + (this->width * y)];
 }
 
-void Scene::SetParticle(int x, int y, ParticleType* type) {
+void Scene::SetParticle(int x, int y, ParticleType *type) {
     this->SetParticle(x, y, type, 0);
 }
 
-void Scene::SetParticle(int x, int y, ParticleType* type, u32 data) {
+void Scene::SetParticle(int x, int y, ParticleType *type, u32 data) {
     if(x < 0 || y < 0 || x >= this->width || y >= this->height) {
         return;
     }
@@ -43,7 +43,7 @@ void Scene::SetMoved(int x, int y, bool moved) {
         return;
     }
 
-    ParticleType* type = this->GetParticle(x, y);
+    ParticleType *type = this->GetParticle(x, y);
     if(type->HasData()) {
         return;
     }
@@ -52,7 +52,7 @@ void Scene::SetMoved(int x, int y, bool moved) {
 }
 
 void Scene::Clear() {
-    for(int x = 0; x < this->width ; x++) {
+    for(int x = 0; x < this->width; x++) {
         for(int y = 0; y < this->height; y++) {
             SetParticle(x, y, ParticleType::NOTHING);
             SetMoved(x, y, false);
@@ -60,7 +60,7 @@ void Scene::Clear() {
     }
 }
 
-void Scene::CreateParticles(int xpos, int ypos, int radius, ParticleType* type) {
+void Scene::CreateParticles(int xpos, int ypos, int radius, ParticleType *type) {
     for(int x = ((xpos - radius - 1) < 0) ? 0 : (xpos - radius - 1); x <= xpos + radius && x < this->width; x++) {
         for(int y = ((ypos - radius - 1) < 0) ? 0 : (ypos - radius - 1); y <= ypos + radius && y < this->height; y++) {
             if((x - xpos) * (x - xpos) + (y - ypos) * (y - ypos) <= radius * radius) {
@@ -70,7 +70,7 @@ void Scene::CreateParticles(int xpos, int ypos, int radius, ParticleType* type) 
     }
 }
 
-void Scene::CreateLine(int newx, int newy, int oldx, int oldy, int size, ParticleType* type) {
+void Scene::CreateLine(int newx, int newy, int oldx, int oldy, int size, ParticleType *type) {
     if(newx == oldx && newy == oldy) {
         CreateParticles(newx, newy, size, type);
     } else {
@@ -81,7 +81,7 @@ void Scene::CreateLine(int newx, int newy, int oldx, int oldy, int size, Particl
     }
 }
 
-void Scene::Emit(int x, int width, ParticleType* type, float density) {
+void Scene::Emit(int x, int width, ParticleType *type, float density) {
     for(int i = x - width / 2; i < x + width / 2; i++) {
         if(rand() < (int) (RAND_MAX * density)) {
             SetParticle(i, 1, type);
@@ -108,7 +108,7 @@ void Scene::Draw() {
     int particleCt = 0;
     for(int y = 0; y < this->height; y++) {
         for(int x = 0; x < this->width; x++) {
-            ParticleType* type = GetParticle(x, y);
+            ParticleType *type = GetParticle(x, y);
             if(type->IsDrawn()) {
                 if(!type->IsStill()) {
                     particleCt++;
@@ -135,7 +135,7 @@ bool Scene::HasMoved(int x, int y) {
 }
 
 void Scene::UpdateParticle(int x, int y) {
-    ParticleType* type = GetParticle(x, y);
+    ParticleType *type = GetParticle(x, y);
     if(type != ParticleType::NOTHING) {
         if(type->IsStill()) {
             if(type->GetPhysics() != NULL) {
@@ -144,8 +144,8 @@ void Scene::UpdateParticle(int x, int y) {
         } else if(!HasMoved(x, y)) {
             // Apply random condition to make particles move unevenly.
             if(rand() >= RAND_MAX / 13) {
-                ParticleType* above = GetParticle(x, y - 1);
-                ParticleType* below = GetParticle(x, y + 1);
+                ParticleType *above = GetParticle(x, y - 1);
+                ParticleType *below = GetParticle(x, y + 1);
                 // Apply gravity to non-floating particles.
                 if(!type->IsFloating()) {
                     if(below == ParticleType::NOTHING && rand() % 8) {
@@ -173,7 +173,7 @@ void Scene::UpdateParticle(int x, int y) {
                 // Make non-floating particles spread due to gravity.
                 if(!type->IsFloating()) {
                     int sign = rand() % 2 == 0 ? -1 : 1;
-                    if (GetParticle(x - sign, y + 1) == ParticleType::NOTHING) {
+                    if(GetParticle(x - sign, y + 1) == ParticleType::NOTHING) {
                         SetParticle(x - sign, y + 1, type);
                         SetMoved(x - sign, y + 1, true);
                         SetParticle(x, y, ParticleType::NOTHING);
