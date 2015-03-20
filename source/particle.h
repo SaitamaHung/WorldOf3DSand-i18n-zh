@@ -6,7 +6,7 @@
 #include <vector>
 #include <functional>
 
-#include <ctrcommon/screen.hpp>
+#include <ctrcommon/types.hpp>
 
 const u8 STILL = 1;
 const u8 FLOATING = 2;
@@ -66,20 +66,30 @@ public:
 
     static void InitParticles();
 
-    ParticleType(const char* name, Color color, u8 flags) {
+    ParticleType(const char* name, u8 r, u8 g, u8 b, u8 flags) {
         this->name = name;
-        this->color = color;
+        this->r = r;
+        this->g = g;
+        this->b = b;
         this->flags = flags;
     }
 
-    ParticleType(const char* name, Color color) : ParticleType(name, color, 0) {}
+    ParticleType(const char* name, u8 r, u8 g, u8 b) : ParticleType(name, r, g, b, 0) {}
 
     const char* GetName() {
         return this->name;
     }
 
-    Color GetColor() {
-        return this->color;
+    u8 GetRed() {
+        return this->r;
+    }
+
+    u8 GetGreen() {
+        return this->g;
+    }
+
+    u8 GetBlue() {
+        return this->b;
     }
 
     bool IsStill() {
@@ -119,7 +129,9 @@ public:
     }
 private:
     const char* name;
-    Color color;
+    u8 r;
+    u8 g;
+    u8 b;
     u8 flags;
     std::function<void(Scene*, int, int)> physics = NULL;
 

@@ -6,11 +6,12 @@
 
 #include <ctrcommon/input.hpp>
 #include <ctrcommon/platform.hpp>
+#include <ctrcommon/screen.hpp>
 
 #define VERSION "1.2"
 
 int main(int argc, char **argv) {
-    if(!platform_init()) {
+    if(!platformInit()) {
         return 0;
     }
 
@@ -25,13 +26,13 @@ int main(int argc, char **argv) {
 
     ParticleType::InitParticles();
 
-    screen_begin_draw(BOTTOM_SCREEN);
-    u16 sceneScreenWidth = screen_get_width();
-    u16 sceneScreenHeight = screen_get_height();
-    screen_end_draw();
+    screenBeginDraw(BOTTOM_SCREEN);
+    u16 sceneScreenWidth = screenGetWidth();
+    u16 sceneScreenHeight = screenGetHeight();
+    screenEndDraw();
 
-    Color dashboardColor = {155, 155, 155};
-    Color dashboardSideColor = {50, 50, 50};
+    u8 dashboardColor = 155;
+    u8 dashboardSideColor = 50;
 
     int buttonsTotal = 0;
     for(std::vector<ParticleType *>::iterator i = ParticleType::TYPES->begin(); i != ParticleType::TYPES->end(); i++) {
@@ -69,25 +70,25 @@ int main(int argc, char **argv) {
     ParticleType *emitTypes[emitters] = {ParticleType::WATER, ParticleType::SAND, ParticleType::SALT, ParticleType::OIL};
     float emitDensity = 0.3f;
 
-    srand((unsigned int) platform_get_time());
+    srand((unsigned int) platformGetTime());
 
     int fpsCounter = 0;
     int fps = 0;
-    u64 lastfps = platform_get_time() - 1000;
-    while(platform_is_running()) {
-        input_poll();
-        if(input_is_pressed(BUTTON_START)) {
+    u64 lastfps = platformGetTime() - 1000;
+    while(platformIsRunning()) {
+        inputPoll();
+        if(inputIsPressed(BUTTON_START)) {
             // Exit by breaking out of the main loop.
             break;
         }
 
         // Check for scene clear.
-        if(input_is_pressed(BUTTON_B)) {
+        if(inputIsPressed(BUTTON_B)) {
             scene->Clear();
         }
 
         // Check for pen size increase.
-        if(input_is_pressed(BUTTON_UP)) {
+        if(inputIsPressed(BUTTON_UP)) {
             penSize++;
             if(penSize > 40) {
                 penSize = 40;
@@ -95,7 +96,7 @@ int main(int argc, char **argv) {
         }
 
         // Check for pen size decrease.
-        if(input_is_pressed(BUTTON_DOWN)) {
+        if(inputIsPressed(BUTTON_DOWN)) {
             penSize--;
             if(penSize < 1) {
                 penSize = 1;
@@ -103,7 +104,7 @@ int main(int argc, char **argv) {
         }
 
         // Check for emitter density increase.
-        if(input_is_pressed(BUTTON_LEFT)) {
+        if(inputIsPressed(BUTTON_LEFT)) {
             emitDensity -= 0.05f;
             if(emitDensity < 0.05f) {
                 emitDensity = 0.05f;
@@ -111,7 +112,7 @@ int main(int argc, char **argv) {
         }
 
         // Check for emitter density decrease.
-        if(input_is_pressed(BUTTON_RIGHT)) {
+        if(inputIsPressed(BUTTON_RIGHT)) {
             emitDensity += 0.05f;
             if(emitDensity > 1) {
                 emitDensity = 1;
@@ -119,8 +120,8 @@ int main(int argc, char **argv) {
         }
 
         // If a touch has just been started, reset the old x and y variables to its position and do GUI interaction.
-        if(input_is_pressed(BUTTON_TOUCH)) {
-            Touch touch = input_get_touch();
+        if(inputIsPressed(BUTTON_TOUCH)) {
+            Touch touch = inputGetTouch();
             oldx = touch.x;
             oldy = touch.y;
 
@@ -157,8 +158,8 @@ int main(int argc, char **argv) {
         }
 
         // Draw a line from touch input.
-        if(input_is_held(BUTTON_TOUCH)) {
-            Touch touch = input_get_touch();
+        if(inputIsHeld(BUTTON_TOUCH)) {
+            Touch touch = inputGetTouch();
             if(touch.x < scene->GetWidth() && touch.y < scene->GetHeight()) {
                 scene->CreateLine(touch.x, touch.y, oldx, oldy, penSize, selectedType);
             }
@@ -179,28 +180,28 @@ int main(int argc, char **argv) {
         scene->Update();
 
         // Prepare to draw.
-        screen_begin_draw(BOTTOM_SCREEN);
-        screen_clear(0, 0, 0);
+        screenBeginDraw(BOTTOM_SCREEN);
+        screenClear(0, 0, 0);
 
         // Draw the game scene.
         scene->Draw();
 
         // Draw GUI.
-        screen_fill(0, dashboardY, (u16) ((sceneScreenWidth - dashboardWidth) / 2), dashboardHeight, dashboardSideColor.r, dashboardSideColor.g, dashboardSideColor.b);
-        screen_fill(dashboardX, dashboardY, dashboardWidth, dashboardHeight, dashboardColor.r, dashboardColor.g, dashboardColor.b);
-        screen_fill(dashboardX + dashboardWidth, dashboardY, (u16) ((sceneScreenWidth - dashboardWidth) / 2), dashboardHeight, dashboardColor.r, dashboardColor.g, dashboardColor.b);
+        screenFill(0, dashboardY, (u16) ((sceneScreenWidth - dashboardWidth) / 2), dashboardHeight, dashboardSideColor, dashboardSideColor, dashboardSideColor);
+        screenFill(dashboardX, dashboardY, dashboardWidth, dashboardHeight, dashboardColor, dashboardColor, dashboardColor);
+        screenFill(dashboardX + dashboardWidth, dashboardY, (u16) ((sceneScreenWidth - dashboardWidth) / 2), dashboardHeight, dashboardColor, dashboardColor, dashboardColor);
         int index = 0;
         for(std::vector<ParticleType *>::iterator i = ParticleType::TYPES->begin(); i != ParticleType::TYPES->end(); i++) {
             ParticleType *type = *i;
             if(type->IsSelectable()) {
                 int x = ((index % buttonsPerRow) * paddedButtonWidth) + buttonBaseX;
                 int y = ((index / buttonsPerRow) * paddedButtonHeight) + buttonBaseY;
-                screen_fill(x, y, buttonWidth, buttonHeight, type->GetColor().r, type->GetColor().g, type->GetColor().b);
+                screenFill(x, y, buttonWidth, buttonHeight, type->GetRed(), type->GetGreen(), type->GetBlue());
                 if(type == selectedType) {
-                    screen_fill(x, y, buttonWidth, buttonPadding, 0, 0, 0);
-                    screen_fill(x + buttonWidth - buttonPadding, y, buttonPadding, buttonHeight, 0, 0, 0);
-                    screen_fill(x, y + buttonHeight - buttonPadding, buttonWidth, buttonPadding, 0, 0, 0);
-                    screen_fill(x, y, buttonPadding, buttonHeight, 0, 0, 0);
+                    screenFill(x, y, buttonWidth, buttonPadding, 0, 0, 0);
+                    screenFill(x + buttonWidth - buttonPadding, y, buttonPadding, buttonHeight, 0, 0, 0);
+                    screenFill(x, y + buttonHeight - buttonPadding, buttonWidth, buttonPadding, 0, 0, 0);
+                    screenFill(x, y, buttonPadding, buttonHeight, 0, 0, 0);
                 }
 
                 index++;
@@ -214,21 +215,21 @@ int main(int argc, char **argv) {
                 x = sceneScreenWidth - x - buttonWidth;
             }
 
-            screen_fill(x, y, buttonWidth, buttonHeight, emitTypes[emitter]->GetColor().r, emitTypes[emitter]->GetColor().g, emitTypes[emitter]->GetColor().b);
+            screenFill(x, y, buttonWidth, buttonHeight, emitTypes[emitter]->GetRed(), emitTypes[emitter]->GetGreen(), emitTypes[emitter]->GetBlue());
             if(emit[emitter]) {
-                screen_fill(x, y, buttonWidth, buttonPadding, 0, 0, 0);
-                screen_fill(x + buttonWidth - buttonPadding, y, buttonPadding, buttonHeight, 0, 0, 0);
-                screen_fill(x, y + buttonHeight - buttonPadding, buttonWidth, buttonPadding, 0, 0, 0);
-                screen_fill(x, y, buttonPadding, buttonHeight, 0, 0, 0);
+                screenFill(x, y, buttonWidth, buttonPadding, 0, 0, 0);
+                screenFill(x + buttonWidth - buttonPadding, y, buttonPadding, buttonHeight, 0, 0, 0);
+                screenFill(x, y + buttonHeight - buttonPadding, buttonWidth, buttonPadding, 0, 0, 0);
+                screenFill(x, y, buttonPadding, buttonHeight, 0, 0, 0);
             }
         }
 
         // Clean up after drawing.
-        screen_end_draw();
+        screenEndDraw();
 
         // Prepare to draw on-screen info.
-        screen_begin_draw(TOP_SCREEN);
-        screen_clear((u8) 0, (u8) 0, (u8) 0);
+        screenBeginDraw(TOP_SCREEN);
+        screenClear((u8) 0, (u8) 0, (u8) 0);
 
         // Draw on-screen info.
         std::stringstream stream;
@@ -253,31 +254,31 @@ int main(int argc, char **argv) {
         stream << "\n";
         stream << "Emitter Density: " << emitDensity << "\n";
         stream << "\n" << controls;
-        screen_draw_string(stream.str(), 0, 0, 255, 255, 255);
+        screenDrawString(stream.str(), 0, 0, 255, 255, 255);
 
         // Clean up after drawing.
-        screen_end_draw();
+        screenEndDraw();
 
-        if(input_is_pressed(BUTTON_SELECT)) {
+        if(inputIsPressed(BUTTON_SELECT)) {
             // Take a screenshot.
-            screen_take_screenshot();
+            screenTakeScreenshot();
         }
 
         // Swap buffers, putting the newly drawn frame on-screen.
-        screen_swap_buffers();
+        screenSwapBuffers();
 
         // Perform FPS counting logic.
         fpsCounter++;
-        u64 since = platform_get_time() - lastfps;
+        u64 since = platformGetTime() - lastfps;
         if(since >= 1000) {
             fps = fpsCounter;
             fpsCounter = 0;
-            lastfps = platform_get_time();
+            lastfps = platformGetTime();
         }
     }
 
     // Delete the scene and clean up.
     delete(scene);
-    platform_cleanup();
+    platformCleanup();
     return 0;
 }

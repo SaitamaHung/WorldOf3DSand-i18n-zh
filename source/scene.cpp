@@ -1,7 +1,6 @@
 #include "scene.h"
 
-#include <stdlib.h>
-#include <algorithm>
+#include <ctrcommon/screen.hpp>
 
 ParticleType *Scene::GetParticle(int x, int y) {
     if(x < 0 || y < 0 || x >= this->width || y >= this->height) {
@@ -118,7 +117,7 @@ void Scene::Draw() {
                     SetMoved(x, y, false);
                 }
 
-                screen_draw(x, y, type->GetColor().r, type->GetColor().g, type->GetColor().b);
+                screenDraw(x, y, type->GetRed(), type->GetGreen(), type->GetBlue());
             }
         }
     }

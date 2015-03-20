@@ -1,48 +1,46 @@
 #include "particle.h"
 
-#include <stdlib.h>
-
 // Still
-ParticleType *ParticleType::NOTHING = new ParticleType("Erase", {0, 0, 0}, STILL | SELECTABLE | NO_DRAW);
-ParticleType *ParticleType::WALL = new ParticleType("Wall", {100, 100, 100}, STILL | SELECTABLE);
-ParticleType *ParticleType::IRONWALL = new ParticleType("Iron Wall", {140, 140, 140}, STILL | SELECTABLE);
-ParticleType *ParticleType::TORCH = new ParticleType("Torch", {139, 69, 19}, STILL | SELECTABLE);
-ParticleType *ParticleType::STOVE = new ParticleType("Stove", {74, 74, 74}, STILL | SELECTABLE);
-ParticleType *ParticleType::ICE = new ParticleType("Ice", {175, 238, 238}, STILL | SELECTABLE);
-ParticleType *ParticleType::RUST = new ParticleType("Rust", {110, 40, 10}, STILL);
-ParticleType *ParticleType::EMBER = new ParticleType("Ember", {127, 25, 25}, STILL);
-ParticleType *ParticleType::PLANT = new ParticleType("Plant", {0, 150, 0}, STILL | BURNABLE | BURNS_TO_EMBER | SELECTABLE);
-ParticleType *ParticleType::VOID = new ParticleType("Void", {60, 60, 60}, STILL | SELECTABLE);
+ParticleType *ParticleType::NOTHING = new ParticleType("Erase", 0, 0, 0, STILL | SELECTABLE | NO_DRAW);
+ParticleType *ParticleType::WALL = new ParticleType("Wall", 100, 100, 100, STILL | SELECTABLE);
+ParticleType *ParticleType::IRONWALL = new ParticleType("Iron Wall", 140, 140, 140, STILL | SELECTABLE);
+ParticleType *ParticleType::TORCH = new ParticleType("Torch", 139, 69, 19, STILL | SELECTABLE);
+ParticleType *ParticleType::STOVE = new ParticleType("Stove", 74, 74, 74, STILL | SELECTABLE);
+ParticleType *ParticleType::ICE = new ParticleType("Ice", 175, 238, 238, STILL | SELECTABLE);
+ParticleType *ParticleType::RUST = new ParticleType("Rust", 110, 40, 10, STILL);
+ParticleType *ParticleType::EMBER = new ParticleType("Ember", 127, 25, 25, STILL);
+ParticleType *ParticleType::PLANT = new ParticleType("Plant", 0, 150, 0, STILL | BURNABLE | BURNS_TO_EMBER | SELECTABLE);
+ParticleType *ParticleType::VOID = new ParticleType("Void", 60, 60, 60, STILL | SELECTABLE);
 
 // Spouts
-ParticleType *ParticleType::WATERSPOUT = new ParticleType("Water Spout", {0, 0, 128}, STILL | SELECTABLE);
-ParticleType *ParticleType::SANDSPOUT = new ParticleType("Sand Spout", {240, 230, 140}, STILL | SELECTABLE);
-ParticleType *ParticleType::SALTSPOUT = new ParticleType("Salt Spout", {238, 233, 233}, STILL | SELECTABLE);
-ParticleType *ParticleType::OILSPOUT = new ParticleType("Oil Spout", {108, 44, 44}, STILL | SELECTABLE);
+ParticleType *ParticleType::WATERSPOUT = new ParticleType("Water Spout", 0, 0, 128, STILL | SELECTABLE);
+ParticleType *ParticleType::SANDSPOUT = new ParticleType("Sand Spout", 240, 230, 140, STILL | SELECTABLE);
+ParticleType *ParticleType::SALTSPOUT = new ParticleType("Salt Spout", 238, 233, 233, STILL | SELECTABLE);
+ParticleType *ParticleType::OILSPOUT = new ParticleType("Oil Spout", 108, 44, 44, STILL | SELECTABLE);
 
 // Elemental
-ParticleType *ParticleType::WATER = new ParticleType("Water", {32, 32, 255}, SELECTABLE);
-ParticleType *ParticleType::DIRT = new ParticleType("Dirt", {205, 175, 149}, SELECTABLE);
-ParticleType *ParticleType::SALT = new ParticleType("Salt", {255, 255, 255}, SELECTABLE);
-ParticleType *ParticleType::OIL = new ParticleType("Oil", {128, 64, 64}, BURNABLE | SELECTABLE);
-ParticleType *ParticleType::SAND = new ParticleType("Sand", {238, 204, 128}, SELECTABLE);
-ParticleType *ParticleType::ASH = new ParticleType("Ash", {200, 200, 200});
+ParticleType *ParticleType::WATER = new ParticleType("Water", 32, 32, 255, SELECTABLE);
+ParticleType *ParticleType::DIRT = new ParticleType("Dirt", 205, 175, 149, SELECTABLE);
+ParticleType *ParticleType::SALT = new ParticleType("Salt", 255, 255, 255, SELECTABLE);
+ParticleType *ParticleType::OIL = new ParticleType("Oil", 128, 64, 64, BURNABLE | SELECTABLE);
+ParticleType *ParticleType::SAND = new ParticleType("Sand", 238, 204, 128, SELECTABLE);
+ParticleType *ParticleType::ASH = new ParticleType("Ash", 200, 200, 200);
 
 // Combined
-ParticleType *ParticleType::SALTWATER = new ParticleType("Salt Water", {65, 105, 225});
-ParticleType *ParticleType::MUD = new ParticleType("Mud", {139, 69, 19});
-ParticleType *ParticleType::ACID = new ParticleType("Acid", {173, 255, 47}, SELECTABLE);
+ParticleType *ParticleType::SALTWATER = new ParticleType("Salt Water", 65, 105, 225);
+ParticleType *ParticleType::MUD = new ParticleType("Mud", 139, 69, 19);
+ParticleType *ParticleType::ACID = new ParticleType("Acid", 173, 255, 47, SELECTABLE);
 
 // Floating
-ParticleType *ParticleType::STEAM = new ParticleType("Steam", {95, 158, 160}, FLOATING);
-ParticleType *ParticleType::FIRE = new ParticleType("Fire", {255, 50, 50}, FLOATING | SELECTABLE);
+ParticleType *ParticleType::STEAM = new ParticleType("Steam", 95, 158, 160, FLOATING);
+ParticleType *ParticleType::FIRE = new ParticleType("Fire", 255, 50, 50, FLOATING | SELECTABLE);
 
 // Electricity
-ParticleType *ParticleType::ELECTRICITY = new ParticleType("Electricity", {255, 255, 0}, SELECTABLE);
+ParticleType *ParticleType::ELECTRICITY = new ParticleType("Electricity", 255, 255, 0, SELECTABLE);
 
 // Explosive
-ParticleType *ParticleType::EXPLOSION = new ParticleType("Explosion", {150, 150, 150}, STILL | DATA);
-ParticleType *ParticleType::GUNPOWDER = new ParticleType("Gunpowder", {50, 50, 50}, SELECTABLE);
+ParticleType *ParticleType::EXPLOSION = new ParticleType("Explosion", 150, 150, 150, STILL | DATA);
+ParticleType *ParticleType::GUNPOWDER = new ParticleType("Gunpowder", 50, 50, 50, SELECTABLE);
 
 std::vector<ParticleType *> *ParticleType::TYPES = new std::vector<ParticleType *>();
 
