@@ -1,12 +1,11 @@
-#include <math.h>
+#include "particle.h"
+
 #include <stdlib.h>
 
-#include <string>
 #include <sstream>
 
-#include <ctrcommon/common.hpp>
-
-#include "particle.h"
+#include <ctrcommon/input.hpp>
+#include <ctrcommon/platform.hpp>
 
 #define VERSION "1.2"
 

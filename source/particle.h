@@ -1,12 +1,12 @@
 #ifndef __PARTICLE_H__
 #define __PARTICLE_H__
 
+#include "scene.h"
+
 #include <vector>
 #include <functional>
 
-#include <ctrcommon/common.hpp>
-
-#include "scene.h"
+#include <ctrcommon/screen.hpp>
 
 const u8 STILL = 1;
 const u8 FLOATING = 2;

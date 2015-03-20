@@ -1,6 +1,6 @@
-#include <stdlib.h>
-
 #include "particle.h"
+
+#include <stdlib.h>
 
 // Still
 ParticleType *ParticleType::NOTHING = new ParticleType("Erase", {0, 0, 0}, STILL | SELECTABLE | NO_DRAW);

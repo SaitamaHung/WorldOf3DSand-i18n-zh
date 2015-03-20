@@ -1,9 +1,11 @@
 #ifndef __SCENE_H__
 #define __SCENE_H__
 
-#include <ctrcommon/common.hpp>
-
 #include "particle.h"
+
+#include <algorithm>
+
+#include <ctrcommon/types.hpp>
 
 class ParticleType;
 
