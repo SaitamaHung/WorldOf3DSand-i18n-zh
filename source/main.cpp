@@ -17,7 +17,10 @@ int main(int argc, char **argv) {
 
     std::stringstream controlStream;
     controlStream << "Touch to draw particles." << "\n";
-    controlStream << "Press Start to exit." << "\n";
+    if(platformIsNinjhax()) {
+        controlStream << "Press Start to exit." << "\n";
+    }
+
     controlStream << "Press Select to take a screenshot." << "\n";
     controlStream << "Press B to clear the screen." << "\n";
     controlStream << "Press Up/Down to modify the pen size." << "\n";
@@ -77,7 +80,7 @@ int main(int argc, char **argv) {
     u64 lastfps = platformGetTime() - 1000;
     while(platformIsRunning()) {
         inputPoll();
-        if(inputIsPressed(BUTTON_START)) {
+        if(inputIsPressed(BUTTON_START) && platformIsNinjhax()) {
             // Exit by breaking out of the main loop.
             break;
         }
