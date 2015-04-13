@@ -1,4 +1,4 @@
-<b><center><h1>World of 3DSand</h></center></b>
+<b><center>World of 3DSand</center></b>
 ==========
 
 World of Sand for the 3DS. More features to come.
