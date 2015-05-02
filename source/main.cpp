@@ -8,7 +8,7 @@
 #include <ctrcommon/platform.hpp>
 #include <ctrcommon/screen.hpp>
 
-#define VERSION "1.2"
+#define VERSION "1.3"
 
 int main(int argc, char **argv) {
     if(!platformInit()) {
