@@ -1,7 +1,5 @@
 #include "scene.h"
 
-#include <ctrcommon/screen.hpp>
-
 ParticleType *Scene::GetParticle(int x, int y) {
     if(x < 0 || y < 0 || x >= this->width || y >= this->height) {
         return ParticleType::NOTHING;
@@ -32,9 +30,23 @@ void Scene::SetParticle(int x, int y, ParticleType *type, u32 data) {
         return;
     }
 
+    ParticleType* previousType = this->GetParticle(x, y);
     int index = x + (this->width * y);
     this->particles[index] = type;
     this->data[index] = data;
+    if(type != previousType) {
+        if(type->IsDrawn()) {
+            this->texturePixels[gpuTextureIndex((u32) x, (u32) y, 512, 512)] = (u32) ((type->GetRed() << 24) | (type->GetGreen() << 16) | (type->GetBlue() << 8) | 0xFF);
+            if((!previousType->IsDrawn() || previousType->IsStill()) && !type->IsStill()) {
+                this->particleCount++;
+            }
+        } else {
+            this->texturePixels[gpuTextureIndex((u32) x, (u32) y, 512, 512)] = 0;
+            if(previousType->IsDrawn() && !previousType->IsStill()) {
+                this->particleCount--;
+            }
+        }
+    }
 }
 
 void Scene::SetMoved(int x, int y, bool moved) {
@@ -101,28 +113,12 @@ void Scene::Update() {
             }
         }
     }
-}
 
-void Scene::Draw() {
-    int particleCt = 0;
-    for(int y = 0; y < this->height; y++) {
-        for(int x = 0; x < this->width; x++) {
-            ParticleType *type = GetParticle(x, y);
-            if(type->IsDrawn()) {
-                if(!type->IsStill()) {
-                    particleCt++;
-                }
-
-                if(HasMoved(x, y)) {
-                    SetMoved(x, y, false);
-                }
-
-                screenDraw(x, y, type->GetRed(), type->GetGreen(), type->GetBlue());
-            }
+    for(int i = 0; i < this->width * this->height; i++) {
+        if(this->particles[i] != NULL && !this->particles[i]->HasData()) {
+            this->data[i] = 0;
         }
     }
-
-    this->particleCount = particleCt;
 }
 
 bool Scene::HasMoved(int x, int y) {

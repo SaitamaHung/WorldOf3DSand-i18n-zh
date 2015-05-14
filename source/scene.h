@@ -5,6 +5,7 @@
 
 #include <algorithm>
 
+#include <ctrcommon/gpu.hpp>
 #include <ctrcommon/types.hpp>
 
 class ParticleType;
@@ -18,6 +19,10 @@ public:
         this->particles = new ParticleType*[this->width * this->height];
         this->data = new u32[this->width * this->height];
         std::fill(this->data, this->data + (this->width * this->height), 0);
+
+        gpuCreateTexture(&this->texture);
+        gpuTextureInfo(this->texture, 512, 512, PIXEL_RGBA8, TEXTURE_MIN_FILTER(FILTER_NEAREST) | TEXTURE_MAG_FILTER(FILTER_NEAREST));
+        this->texturePixels = (u32*) gpuGetTextureData(this->texture);
     }
 
     ~Scene() {
@@ -37,6 +42,10 @@ public:
         return this->particleCount;
     }
 
+    u32 GetTexture() {
+        return this->texture;
+    }
+
     ParticleType* GetParticle(int x, int y);
     u32 GetData(int x, int y);
     void SetParticle(int x, int y, ParticleType* type);
@@ -49,13 +58,14 @@ public:
     void Emit(int x, int width, ParticleType* type, float density);
 
     void Update();
-    void Draw();
 private:
     int width;
     int height;
     int particleCount;
     ParticleType** particles;
     u32* data;
+    u32 texture;
+    u32* texturePixels;
 
     bool HasMoved(int x, int y);
     void UpdateParticle(int x, int y);
