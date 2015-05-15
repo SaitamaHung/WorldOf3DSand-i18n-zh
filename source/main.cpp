@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
             x1, y1, -0.1f, texX1, texY1, 1.0f, 1.0f, 1.0f, 1.0f,
     };
 
-    gpuVboData(sceneVbo, vboData, sizeof(vboData), sizeof(vboData) / (9 * 4), PRIM_TRIANGLES);
+    gpuVboData(sceneVbo, vboData, 6 * 9, PRIM_TRIANGLES);
 
     int fpsCounter = 0;
     int fps = 0;
