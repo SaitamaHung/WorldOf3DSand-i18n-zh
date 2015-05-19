@@ -1,5 +1,7 @@
 #include "particle.h"
 
+#include <string.h>
+
 #include <iomanip>
 #include <sstream>
 
@@ -7,12 +9,31 @@
 #include <ctrcommon/input.hpp>
 #include <ctrcommon/platform.hpp>
 
+#include "gui_bin.h"
+
 #define VERSION "1.3"
 
 int main(int argc, char **argv) {
     if(!platformInit()) {
         return 0;
     }
+
+    srand((unsigned int) platformGetTime());
+
+    ParticleType::InitParticles();
+
+    Scene *scene = new Scene(BOTTOM_WIDTH, BOTTOM_HEIGHT - 40);
+    ParticleType *selectedType = ParticleType::WALL;
+
+    int penSize = 2;
+    int oldx = 0;
+    int oldy = 0;
+
+    int emitters = 4;
+    int emitterSpacing = scene->GetWidth() / emitters;
+    bool emit[emitters] = {true, true, true, true};
+    ParticleType *emitTypes[emitters] = {ParticleType::WATER, ParticleType::SAND, ParticleType::SALT, ParticleType::OIL};
+    float emitDensity = 0.3f;
 
     std::stringstream controlStream;
     controlStream << "Touch to draw particles." << "\n";
@@ -26,74 +47,69 @@ int main(int argc, char **argv) {
     controlStream << "Press Left/Right to modify the emitter density." << "\n";
     const std::string controls = controlStream.str();
 
-    ParticleType::InitParticles();
+    u32 guiTexture = 0;
+    void* gpuGuiTexture = gpuAlloc(gui_bin_size);
+    memcpy(gpuGuiTexture, gui_bin, gui_bin_size);
+    gpuCreateTexture(&guiTexture);
+    gpuTextureData(guiTexture, gpuGuiTexture, 512, 64, PIXEL_RGBA8, TEXTURE_MIN_FILTER(FILTER_NEAREST) | TEXTURE_MAG_FILTER(FILTER_NEAREST));
+    gpuFree(gpuGuiTexture);
 
-    u16 sceneScreenWidth = 320;
-    u16 sceneScreenHeight = 240;
+    u32 dashboardVbo;
+    gpuCreateVbo(&dashboardVbo);
+    gpuVboAttributes(dashboardVbo, ATTRIBUTE(0, 3, ATTR_FLOAT) | ATTRIBUTE(1, 2, ATTR_FLOAT) | ATTRIBUTE(2, 4, ATTR_FLOAT), 3);
 
-    u8 dashboardColor = 155;
-    u8 dashboardSideColor = 50;
+    const float dashTexX1 = 0.0f;
+    const float dashTexY1 = (64.0f - 40.0f) / 64.0f;
+    const float dashTexX2 = dashTexX1 + (320.0f / 512.0f);
+    const float dashTexY2 = dashTexY1 + (40.0f / 64.0f);
 
-    int buttonsTotal = 0;
-    for(std::vector<ParticleType *>::iterator i = ParticleType::TYPES->begin(); i != ParticleType::TYPES->end(); i++) {
-        ParticleType *type = *i;
-        if(type->IsSelectable()) {
-            buttonsTotal++;
-        }
-    }
+    const float dashboardVboData[] = {
+            0.0f, 0.0f, -0.1f, dashTexX1, dashTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
+            320.0f, 0.0f, -0.1f, dashTexX2, dashTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
+            320.0f, 40.0f, -0.1f, dashTexX2, dashTexY2, 1.0f, 1.0f, 1.0f, 1.0f,
+            320.0f, 40.0f, -0.1f, dashTexX2, dashTexY2, 1.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 40.0f, -0.1f, dashTexX1, dashTexY2, 1.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 0.0f, -0.1f, dashTexX1, dashTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
+    };
 
-    u16 buttonsPerRow = 10;
-    u16 buttonsPerColumn = 3;
-    u16 buttonPadding = 1;
-    u16 buttonWidth = 24;
-    u16 buttonHeight = 12;
-    u16 paddedButtonWidth = buttonWidth + buttonPadding;
-    u16 paddedButtonHeight = buttonHeight + buttonPadding;
+    gpuVboData(dashboardVbo, dashboardVboData, 6 * 9, PRIM_TRIANGLES);
 
-    u16 dashboardWidth = buttonsPerRow * paddedButtonWidth + buttonPadding;
-    u16 dashboardHeight = buttonsPerColumn * paddedButtonHeight + buttonPadding;
-    int dashboardX = (sceneScreenWidth - dashboardWidth) / 2;
-    int dashboardY = 0;
+    u32 selectorVbo;
+    gpuCreateVbo(&selectorVbo);
+    gpuVboAttributes(selectorVbo, ATTRIBUTE(0, 3, ATTR_FLOAT) | ATTRIBUTE(1, 2, ATTR_FLOAT) | ATTRIBUTE(2, 4, ATTR_FLOAT), 3);
 
-    int buttonBaseX = dashboardX + buttonPadding;
-    int buttonBaseY = dashboardY + buttonPadding;
+    const float selectorTexX1 = 0.0f;
+    const float selectorTexY1 = (64.0f - 52.0f) / 64.0f;
+    const float selectorTexX2 = selectorTexX1 + (24.0f / 512.0f);
+    const float selectorTexY2 = selectorTexY1 + (12.0f / 64.0f);
 
-    Scene *scene = new Scene(sceneScreenWidth, sceneScreenHeight - dashboardHeight);
-    ParticleType *selectedType = ParticleType::WALL;
+    const float selectorVboData[] = {
+            0.0f, 0.0f, -0.1f, selectorTexX1, selectorTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
+            24.0f, 0.0f, -0.1f, selectorTexX2, selectorTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
+            24.0f, 12.0f, -0.1f, selectorTexX2, selectorTexY2, 1.0f, 1.0f, 1.0f, 1.0f,
+            24.0f, 12.0f, -0.1f, selectorTexX2, selectorTexY2, 1.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 12.0f, -0.1f, selectorTexX1, selectorTexY2, 1.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 0.0f, -0.1f, selectorTexX1, selectorTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
+    };
 
-    int penSize = 2;
-    int oldx = 0;
-    int oldy = 0;
-
-    int emitters = 4;
-    int emitterSpacing = scene->GetWidth() / emitters;
-    bool emit[emitters] = {true, true, true, true};
-    ParticleType *emitTypes[emitters] = {ParticleType::WATER, ParticleType::SAND, ParticleType::SALT, ParticleType::OIL};
-    float emitDensity = 0.3f;
-
-    srand((unsigned int) platformGetTime());
+    gpuVboData(selectorVbo, selectorVboData, 6 * 9, PRIM_TRIANGLES);
 
     u32 sceneVbo = 0;
     gpuCreateVbo(&sceneVbo);
     gpuVboAttributes(sceneVbo, ATTRIBUTE(0, 3, ATTR_FLOAT) | ATTRIBUTE(1, 2, ATTR_FLOAT) | ATTRIBUTE(2, 4, ATTR_FLOAT), 3);
 
-    const float x1 = 0;
-    const float y1 = dashboardY + dashboardHeight;
-    const float x2 = x1 + scene->GetWidth();
-    const float y2 = y1 + scene->GetHeight();
-
-    const float texX1 = 0.0f;
-    const float texY1 = (512.0f - scene->GetHeight()) / 512.0f;
-    const float texX2 = texX1 + (scene->GetWidth() / 512.0f);
-    const float texY2 = texY1 + (scene->GetHeight() / 512.0f);
+    const float sceneTexX1 = 0.0f;
+    const float sceneTexY1 = (512.0f - scene->GetHeight()) / 512.0f;
+    const float sceneTexX2 = sceneTexX1 + (scene->GetWidth() / 512.0f);
+    const float sceneTexY2 = sceneTexY1 + (scene->GetHeight() / 512.0f);
 
     const float vboData[] = {
-            x1, y1, -0.1f, texX1, texY1, 1.0f, 1.0f, 1.0f, 1.0f,
-            x2, y1, -0.1f, texX2, texY1, 1.0f, 1.0f, 1.0f, 1.0f,
-            x2, y2, -0.1f, texX2, texY2, 1.0f, 1.0f, 1.0f, 1.0f,
-            x2, y2, -0.1f, texX2, texY2, 1.0f, 1.0f, 1.0f, 1.0f,
-            x1, y2, -0.1f, texX1, texY2, 1.0f, 1.0f, 1.0f, 1.0f,
-            x1, y1, -0.1f, texX1, texY1, 1.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 40.0f, -0.1f, sceneTexX1, sceneTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
+            0.0f + scene->GetWidth(), 40.0f, -0.1f, sceneTexX2, sceneTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
+            0.0f + scene->GetWidth(), 40.0f + scene->GetHeight(), -0.1f, sceneTexX2, sceneTexY2, 1.0f, 1.0f, 1.0f, 1.0f,
+            0.0f + scene->GetWidth(), 40.0f + scene->GetHeight(), -0.1f, sceneTexX2, sceneTexY2, 1.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 40.0f + scene->GetHeight(), -0.1f, sceneTexX1, sceneTexY2, 1.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 40.0f, -0.1f, sceneTexX1, sceneTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
     };
 
     gpuVboData(sceneVbo, vboData, 6 * 9, PRIM_TRIANGLES);
@@ -153,32 +169,34 @@ int main(int argc, char **argv) {
 
             // Check for GUI interaction.
             int dashboardTouchY = 239 - touch.y;
-            if(touch.x > dashboardX && touch.x < dashboardX + dashboardWidth && dashboardTouchY > dashboardY && dashboardTouchY < dashboardY + dashboardHeight) {
-                int index = 0;
-                for(std::vector<ParticleType *>::iterator i = ParticleType::TYPES->begin(); i != ParticleType::TYPES->end(); i++) {
-                    ParticleType *type = *i;
-                    if(type->IsSelectable()) {
-                        int x = ((index % buttonsPerRow) * paddedButtonWidth) + buttonBaseX;
-                        int y = ((2 - (index / buttonsPerRow)) * paddedButtonHeight) + buttonBaseY;
-                        if(touch.x > x && dashboardTouchY > y && touch.x <= x + buttonWidth && dashboardTouchY <= y + buttonHeight) {
-                            selectedType = type;
-                            break;
+            if(dashboardTouchY > 0 && dashboardTouchY < 40) {
+                if(touch.x > 35 && touch.x < 285 && dashboardTouchY > 0 && dashboardTouchY < 40) {
+                    int index = 0;
+                    for(std::vector<ParticleType *>::iterator i = ParticleType::TYPES->begin(); i != ParticleType::TYPES->end(); i++) {
+                        ParticleType *type = *i;
+                        if(type->IsSelectable()) {
+                            int x = 35 + ((index % 10) * 25);
+                            int y = ((2 - (index / 10)) * 13) + 1;
+                            if(touch.x > x && dashboardTouchY > y && touch.x <= x + 24 && dashboardTouchY <= y + 12) {
+                                selectedType = type;
+                                break;
+                            }
+
+                            index++;
+                        }
+                    }
+                } else if(dashboardTouchY > 0 && dashboardTouchY < 40) {
+                    for(int emitter = 0; emitter < emitters; emitter++) {
+                        int x = 4;
+                        int y = ((2 - (emitter % 2)) * 13) + 1;
+                        if(emitter >= emitters / 2) {
+                            x = 320 - x - 24;
                         }
 
-                        index++;
-                    }
-                }
-            } else if(dashboardTouchY > dashboardY && dashboardTouchY < dashboardY + dashboardHeight) {
-                for(int emitter = 0; emitter < emitters; emitter++) {
-                    int x = ((sceneScreenWidth - dashboardWidth) / 2 - (paddedButtonWidth + buttonPadding)) / 2;
-                    int y = buttonBaseY + paddedButtonHeight * (2 - (emitter % 2));
-                    if(emitter >= emitters / 2) {
-                        x = sceneScreenWidth - x - buttonWidth;
-                    }
-
-                    if(touch.x > x && dashboardTouchY > y && touch.x <= x + buttonWidth && dashboardTouchY <= y + buttonHeight) {
-                        emit[emitter] = !emit[emitter];
-                        break;
+                        if(touch.x > x && dashboardTouchY > y && touch.x <= x + 24 && dashboardTouchY <= y + 12) {
+                            emit[emitter] = !emit[emitter];
+                            break;
+                        }
                     }
                 }
             }
@@ -215,44 +233,47 @@ int main(int argc, char **argv) {
         gpuDrawVbo(sceneVbo);
 
         // Draw GUI.
-        gputDrawRectangle(0, dashboardY, (u32) ((sceneScreenWidth - dashboardWidth) / 2), dashboardHeight, dashboardSideColor, dashboardSideColor, dashboardSideColor);
-        gputDrawRectangle(dashboardX, dashboardY, dashboardWidth, dashboardHeight, dashboardColor, dashboardColor, dashboardColor);
-        gputDrawRectangle(dashboardX + dashboardWidth, dashboardY, (u32) ((sceneScreenWidth - dashboardWidth) / 2), dashboardHeight, dashboardSideColor, dashboardSideColor, dashboardSideColor);
-        int index = 0;
+        gpuBindTexture(TEXUNIT0, guiTexture);
+        gpuDrawVbo(dashboardVbo);
+
+        // Draw particle selector.
+        int selectIndex = 0;
         for(std::vector<ParticleType *>::iterator i = ParticleType::TYPES->begin(); i != ParticleType::TYPES->end(); i++) {
             ParticleType *type = *i;
             if(type->IsSelectable()) {
-                int x = ((index % buttonsPerRow) * paddedButtonWidth) + buttonBaseX;
-                int y = ((2 - (index / buttonsPerRow)) * paddedButtonHeight) + buttonBaseY;
-                gputDrawRectangle(x, y, buttonWidth, buttonHeight, type->GetRed(), type->GetGreen(), type->GetBlue());
-                if(type == selectedType) {
-                    gputDrawRectangle(x, y, buttonWidth, buttonPadding, 0, 0, 0);
-                    gputDrawRectangle(x + buttonWidth - buttonPadding, y, buttonPadding, buttonHeight, 0, 0, 0);
-                    gputDrawRectangle(x, y + buttonHeight - buttonPadding, buttonWidth, buttonPadding, 0, 0, 0);
-                    gputDrawRectangle(x, y, buttonPadding, buttonHeight, 0, 0, 0);
+                if(selectedType == type) {
+                    int selectX = 35 + ((selectIndex % 10) * 25);
+                    int selectY = ((2 - (selectIndex / 10)) * 13) + 1;
+
+                    gputPushModelView();
+                    gputTranslate(selectX, selectY, 0);
+                    gpuDrawVbo(selectorVbo);
+                    gputPopModelView();
+
+                    break;
                 }
 
-                index++;
+                selectIndex++;
             }
         }
 
+        // Draw emitter selectors.
         for(int emitter = 0; emitter < emitters; emitter++) {
-            int x = ((sceneScreenWidth - dashboardWidth) / 2 - (paddedButtonWidth + buttonPadding)) / 2;
-            int y = buttonBaseY + paddedButtonHeight * (2 - (emitter % 2));
+            int emitterX = 4;
+            int emitterY = ((2 - (emitter % 2)) * 13) + 1;
             if(emitter >= emitters / 2) {
-                x = sceneScreenWidth - x - buttonWidth;
+                emitterX = 320 - emitterX - 24;
             }
 
-            gputDrawRectangle(x, y, buttonWidth, buttonHeight, emitTypes[emitter]->GetRed(), emitTypes[emitter]->GetGreen(), emitTypes[emitter]->GetBlue());
             if(emit[emitter]) {
-                gputDrawRectangle(x, y, buttonWidth, buttonPadding, 0, 0, 0);
-                gputDrawRectangle(x + buttonWidth - buttonPadding, y, buttonPadding, buttonHeight, 0, 0, 0);
-                gputDrawRectangle(x, y + buttonHeight - buttonPadding, buttonWidth, buttonPadding, 0, 0, 0);
-                gputDrawRectangle(x, y, buttonPadding, buttonHeight, 0, 0, 0);
+                gputPushModelView();
+                gputTranslate(emitterX, emitterY, 0);
+                gpuDrawVbo(selectorVbo);
+                gputPopModelView();
             }
         }
 
-        // Clean up after drawing.
+        // Finish drawing.
         gpuFlush();
         gpuFlushBuffer();
 
@@ -286,7 +307,7 @@ int main(int argc, char **argv) {
         stream << "\n" << controls;
         gputDrawString(stream.str(), 0, gpuGetViewportHeight() - 1 - gputGetStringHeight(stream.str(), 8), 8, 8);
 
-        // Clean up after drawing.
+        // Finish drawing.
         gpuFlush();
         gpuFlushBuffer();
 
