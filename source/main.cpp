@@ -206,7 +206,8 @@ int main(int argc, char **argv) {
         scene->Update();
 
         // Prepare to draw.
-        gpuViewport(BOTTOM_SCREEN, 0, 0, 320, 240);
+        gpuViewport(BOTTOM_SCREEN, 0, 0, BOTTOM_WIDTH, BOTTOM_HEIGHT);
+        gputOrtho(0, BOTTOM_WIDTH, 0, BOTTOM_HEIGHT, -1, 1);
         gpuClear();
 
         // Draw the game scene.
@@ -256,7 +257,8 @@ int main(int argc, char **argv) {
         gpuFlushBuffer();
 
         // Prepare to draw on-screen info.
-        gpuViewport(TOP_SCREEN, 0, 0, 400, 240);
+        gpuViewport(TOP_SCREEN, 0, 0, TOP_WIDTH, TOP_HEIGHT);
+        gputOrtho(0, TOP_WIDTH, 0, TOP_HEIGHT, -1, 1);
         gpuClear();
 
         // Draw on-screen info.
@@ -282,7 +284,7 @@ int main(int argc, char **argv) {
         stream << "\n";
         stream << "Emitter Density: " << emitDensity << "\n";
         stream << "\n" << controls;
-        gputDrawString(stream.str(), 0, gpuGetViewportHeight() - 1 - gputGetStringHeight(stream.str()));
+        gputDrawString(stream.str(), 0, gpuGetViewportHeight() - 1 - gputGetStringHeight(stream.str(), 8), 8, 8);
 
         // Clean up after drawing.
         gpuFlush();
