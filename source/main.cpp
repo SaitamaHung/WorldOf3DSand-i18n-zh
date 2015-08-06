@@ -11,7 +11,7 @@
 
 #include "gui_bin.h"
 
-#define VERSION "1.3.1"
+#define VERSION "1.3.2"
 
 int main(int argc, char **argv) {
     if(!platformInit(argc)) {
