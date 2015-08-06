@@ -11,10 +11,10 @@
 
 #include "gui_bin.h"
 
-#define VERSION "1.3"
+#define VERSION "1.3.1"
 
 int main(int argc, char **argv) {
-    if(!platformInit()) {
+    if(!platformInit(argc)) {
         return 0;
     }
 
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 
     std::stringstream controlStream;
     controlStream << "Touch to draw particles." << "\n";
-    if(platformIsNinjhax()) {
+    if(platformHasLauncher()) {
         controlStream << "Press Start to exit." << "\n";
     }
 
@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
     u64 lastfps = platformGetTime() - 1000;
     while(platformIsRunning()) {
         inputPoll();
-        if(inputIsPressed(BUTTON_START) && platformIsNinjhax()) {
+        if(inputIsPressed(BUTTON_START) && platformHasLauncher()) {
             // Exit by breaking out of the main loop.
             break;
         }
