@@ -1,5 +1,4 @@
-<b><center>World of 3DSand</center></b>
-==========
+# World of 3DSand
 
 World of Sand for the 3DS. More features to come.
 
