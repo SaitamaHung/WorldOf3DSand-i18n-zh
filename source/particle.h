@@ -6,7 +6,7 @@
 #include <vector>
 #include <functional>
 
-#include <ctrcommon/types.hpp>
+#include <citrus/types.hpp>
 
 const u8 STILL = 1;
 const u8 FLOATING = 2;

@@ -5,30 +5,15 @@
 
 #include <algorithm>
 
-#include <ctrcommon/gpu.hpp>
-#include <ctrcommon/types.hpp>
+#include <citrus/types.hpp>
 
 class ParticleType;
 
 class Scene {
 public:
-    Scene(int width, int height) {
-        this->width = width;
-        this->height = height;
-        this->particleCount = 0;
-        this->particles = new ParticleType*[this->width * this->height];
-        this->data = new u32[this->width * this->height];
-        std::fill(this->data, this->data + (this->width * this->height), 0);
+    Scene(int width, int height);
 
-        gpuCreateTexture(&this->texture);
-        gpuTextureInfo(this->texture, 512, 512, PIXEL_RGBA8, TEXTURE_MIN_FILTER(FILTER_NEAREST) | TEXTURE_MAG_FILTER(FILTER_NEAREST));
-        this->texturePixels = (u32*) gpuGetTextureData(this->texture);
-    }
-
-    ~Scene() {
-        delete(this->particles);
-        delete(this->data);
-    }
+    ~Scene();
 
     int GetWidth() {
         return this->width;

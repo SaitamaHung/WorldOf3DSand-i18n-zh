@@ -5,20 +5,23 @@
 #include <iomanip>
 #include <sstream>
 
-#include <ctrcommon/gpu.hpp>
-#include <ctrcommon/input.hpp>
-#include <ctrcommon/platform.hpp>
+#include <citrus/core.hpp>
+#include <citrus/gpu.hpp>
+#include <citrus/gput.hpp>
+#include <citrus/hid.hpp>
 
 #include "gui_bin.h"
+
+using namespace ctr;
 
 #define VERSION "1.3.2"
 
 int main(int argc, char **argv) {
-    if(!platformInit(argc)) {
+    if(!core::init(argc)) {
         return 0;
     }
 
-    srand((unsigned int) platformGetTime());
+    srand((unsigned int) core::time());
 
     ParticleType::InitParticles();
 
@@ -37,7 +40,7 @@ int main(int argc, char **argv) {
 
     std::stringstream controlStream;
     controlStream << "Touch to draw particles." << "\n";
-    if(platformHasLauncher()) {
+    if(core::launcher()) {
         controlStream << "Press Start to exit." << "\n";
     }
 
@@ -48,15 +51,15 @@ int main(int argc, char **argv) {
     const std::string controls = controlStream.str();
 
     u32 guiTexture = 0;
-    void* gpuGuiTexture = gpuAlloc(gui_bin_size);
+    void* gpuGuiTexture = gpu::galloc(gui_bin_size);
     memcpy(gpuGuiTexture, gui_bin, gui_bin_size);
-    gpuCreateTexture(&guiTexture);
-    gpuTextureData(guiTexture, gpuGuiTexture, 512, 64, PIXEL_RGBA8, TEXTURE_MIN_FILTER(FILTER_NEAREST) | TEXTURE_MAG_FILTER(FILTER_NEAREST));
-    gpuFree(gpuGuiTexture);
+    gpu::createTexture(&guiTexture);
+    gpu::setTextureData(guiTexture, gpuGuiTexture, 512, 64, gpu::PIXEL_RGBA8, TEXTURE_MIN_FILTER(gpu::FILTER_NEAREST) | TEXTURE_MAG_FILTER(gpu::FILTER_NEAREST));
+    gpu::gfree(gpuGuiTexture);
 
     u32 dashboardVbo;
-    gpuCreateVbo(&dashboardVbo);
-    gpuVboAttributes(dashboardVbo, ATTRIBUTE(0, 3, ATTR_FLOAT) | ATTRIBUTE(1, 2, ATTR_FLOAT) | ATTRIBUTE(2, 4, ATTR_FLOAT), 3);
+    gpu::createVbo(&dashboardVbo);
+    gpu::setVboAttributes(dashboardVbo, ATTRIBUTE(0, 3, gpu::ATTR_FLOAT) | ATTRIBUTE(1, 2, gpu::ATTR_FLOAT) | ATTRIBUTE(2, 4, gpu::ATTR_FLOAT), 3);
 
     const float dashTexX1 = 0.0f;
     const float dashTexY1 = (64.0f - 40.0f) / 64.0f;
@@ -72,11 +75,11 @@ int main(int argc, char **argv) {
             0.0f, 0.0f, -0.1f, dashTexX1, dashTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
     };
 
-    gpuVboData(dashboardVbo, dashboardVboData, 6 * 9, PRIM_TRIANGLES);
+    gpu::setVboData(dashboardVbo, dashboardVboData, 6 * 9, gpu::PRIM_TRIANGLES);
 
     u32 selectorVbo;
-    gpuCreateVbo(&selectorVbo);
-    gpuVboAttributes(selectorVbo, ATTRIBUTE(0, 3, ATTR_FLOAT) | ATTRIBUTE(1, 2, ATTR_FLOAT) | ATTRIBUTE(2, 4, ATTR_FLOAT), 3);
+    gpu::createVbo(&selectorVbo);
+    gpu::setVboAttributes(selectorVbo, ATTRIBUTE(0, 3, gpu::ATTR_FLOAT) | ATTRIBUTE(1, 2, gpu::ATTR_FLOAT) | ATTRIBUTE(2, 4, gpu::ATTR_FLOAT), 3);
 
     const float selectorTexX1 = 0.0f;
     const float selectorTexY1 = (64.0f - 52.0f) / 64.0f;
@@ -92,11 +95,11 @@ int main(int argc, char **argv) {
             0.0f, 0.0f, -0.1f, selectorTexX1, selectorTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
     };
 
-    gpuVboData(selectorVbo, selectorVboData, 6 * 9, PRIM_TRIANGLES);
+    gpu::setVboData(selectorVbo, selectorVboData, 6 * 9, gpu::PRIM_TRIANGLES);
 
     u32 sceneVbo = 0;
-    gpuCreateVbo(&sceneVbo);
-    gpuVboAttributes(sceneVbo, ATTRIBUTE(0, 3, ATTR_FLOAT) | ATTRIBUTE(1, 2, ATTR_FLOAT) | ATTRIBUTE(2, 4, ATTR_FLOAT), 3);
+    gpu::createVbo(&sceneVbo);
+    gpu::setVboAttributes(sceneVbo, ATTRIBUTE(0, 3, gpu::ATTR_FLOAT) | ATTRIBUTE(1, 2, gpu::ATTR_FLOAT) | ATTRIBUTE(2, 4, gpu::ATTR_FLOAT), 3);
 
     const float sceneTexX1 = 0.0f;
     const float sceneTexY1 = (512.0f - scene->GetHeight()) / 512.0f;
@@ -112,25 +115,25 @@ int main(int argc, char **argv) {
             0.0f, 40.0f, -0.1f, sceneTexX1, sceneTexY1, 1.0f, 1.0f, 1.0f, 1.0f,
     };
 
-    gpuVboData(sceneVbo, vboData, 6 * 9, PRIM_TRIANGLES);
+    gpu::setVboData(sceneVbo, vboData, 6 * 9, gpu::PRIM_TRIANGLES);
 
     int fpsCounter = 0;
     int fps = 0;
-    u64 lastfps = platformGetTime() - 1000;
-    while(platformIsRunning()) {
-        inputPoll();
-        if(inputIsPressed(BUTTON_START) && platformHasLauncher()) {
+    u64 lastfps = core::time() - 1000;
+    while(core::running()) {
+        hid::poll();
+        if(core::launcher() && hid::pressed(hid::BUTTON_START)) {
             // Exit by breaking out of the main loop.
             break;
         }
 
         // Check for scene clear.
-        if(inputIsPressed(BUTTON_B)) {
+        if(hid::pressed(hid::BUTTON_B)) {
             scene->Clear();
         }
 
         // Check for pen size increase.
-        if(inputIsPressed(BUTTON_UP)) {
+        if(hid::pressed(hid::BUTTON_UP)) {
             penSize++;
             if(penSize > 40) {
                 penSize = 40;
@@ -138,7 +141,7 @@ int main(int argc, char **argv) {
         }
 
         // Check for pen size decrease.
-        if(inputIsPressed(BUTTON_DOWN)) {
+        if(hid::pressed(hid::BUTTON_DOWN)) {
             penSize--;
             if(penSize < 1) {
                 penSize = 1;
@@ -146,7 +149,7 @@ int main(int argc, char **argv) {
         }
 
         // Check for emitter density increase.
-        if(inputIsPressed(BUTTON_LEFT)) {
+        if(hid::pressed(hid::BUTTON_LEFT)) {
             emitDensity -= 0.05f;
             if(emitDensity < 0.05f) {
                 emitDensity = 0.05f;
@@ -154,7 +157,7 @@ int main(int argc, char **argv) {
         }
 
         // Check for emitter density decrease.
-        if(inputIsPressed(BUTTON_RIGHT)) {
+        if(hid::pressed(hid::BUTTON_RIGHT)) {
             emitDensity += 0.05f;
             if(emitDensity > 1) {
                 emitDensity = 1;
@@ -162,8 +165,8 @@ int main(int argc, char **argv) {
         }
 
         // If a touch has just been started, reset the old x and y variables to its position and do GUI interaction.
-        if(inputIsPressed(BUTTON_TOUCH)) {
-            Touch touch = inputGetTouch();
+        if(hid::pressed(hid::BUTTON_TOUCH)) {
+            hid::Touch touch = hid::touch();
             oldx = touch.x;
             oldy = touch.y;
 
@@ -203,8 +206,8 @@ int main(int argc, char **argv) {
         }
 
         // Draw a line from touch input.
-        if(inputIsHeld(BUTTON_TOUCH)) {
-            Touch touch = inputGetTouch();
+        if(hid::held(hid::BUTTON_TOUCH)) {
+            hid::Touch touch = hid::touch();
             if(touch.x < scene->GetWidth() && touch.y < scene->GetHeight()) {
                 scene->CreateLine(touch.x, touch.y, oldx, oldy, penSize, selectedType);
             }
@@ -224,17 +227,17 @@ int main(int argc, char **argv) {
         scene->Update();
 
         // Prepare to draw.
-        gpuViewport(BOTTOM_SCREEN, 0, 0, BOTTOM_WIDTH, BOTTOM_HEIGHT);
-        gputOrtho(0, BOTTOM_WIDTH, 0, BOTTOM_HEIGHT, -1, 1);
-        gpuClear();
+        gpu::setViewport(gpu::SCREEN_BOTTOM, 0, 0, BOTTOM_WIDTH, BOTTOM_HEIGHT);
+        gput::setOrtho(0, BOTTOM_WIDTH, 0, BOTTOM_HEIGHT, -1, 1);
+        gpu::clear();
 
         // Draw the game scene.
-        gpuBindTexture(TEXUNIT0, scene->GetTexture());
-        gpuDrawVbo(sceneVbo);
+        gpu::bindTexture(gpu::TEXUNIT0, scene->GetTexture());
+        gpu::drawVbo(sceneVbo);
 
         // Draw GUI.
-        gpuBindTexture(TEXUNIT0, guiTexture);
-        gpuDrawVbo(dashboardVbo);
+        gpu::bindTexture(gpu::TEXUNIT0, guiTexture);
+        gpu::drawVbo(dashboardVbo);
 
         // Draw particle selector.
         int selectIndex = 0;
@@ -245,10 +248,10 @@ int main(int argc, char **argv) {
                     int selectX = 35 + ((selectIndex % 10) * 25);
                     int selectY = ((2 - (selectIndex / 10)) * 13) + 1;
 
-                    gputPushModelView();
-                    gputTranslate(selectX, selectY, 0);
-                    gpuDrawVbo(selectorVbo);
-                    gputPopModelView();
+                    gput::pushModelView();
+                    gput::translate(selectX, selectY, 0);
+                    gpu::drawVbo(selectorVbo);
+                    gput::popModelView();
 
                     break;
                 }
@@ -266,21 +269,21 @@ int main(int argc, char **argv) {
             }
 
             if(emit[emitter]) {
-                gputPushModelView();
-                gputTranslate(emitterX, emitterY, 0);
-                gpuDrawVbo(selectorVbo);
-                gputPopModelView();
+                gput::pushModelView();
+                gput::translate(emitterX, emitterY, 0);
+                gpu::drawVbo(selectorVbo);
+                gput::popModelView();
             }
         }
 
         // Finish drawing.
-        gpuFlush();
-        gpuFlushBuffer();
+        gpu::flushCommands();
+        gpu::flushBuffer();
 
         // Prepare to draw on-screen info.
-        gpuViewport(TOP_SCREEN, 0, 0, TOP_WIDTH, TOP_HEIGHT);
-        gputOrtho(0, TOP_WIDTH, 0, TOP_HEIGHT, -1, 1);
-        gpuClear();
+        gpu::setViewport(gpu::SCREEN_TOP, 0, 0, TOP_WIDTH, TOP_HEIGHT);
+        gput::setOrtho(0, TOP_WIDTH, 0, TOP_HEIGHT, -1, 1);
+        gpu::clear();
 
         // Draw on-screen info.
         std::stringstream stream;
@@ -305,32 +308,33 @@ int main(int argc, char **argv) {
         stream << "\n";
         stream << "Emitter Density: " << emitDensity << "\n";
         stream << "\n" << controls;
-        gputDrawString(stream.str(), 0, gpuGetViewportHeight() - 1 - gputGetStringHeight(stream.str(), 8), 8, 8);
+        gput::drawString(stream.str(), 0, TOP_HEIGHT - 1 - gput::getStringHeight(stream.str(), 8), 8, 8);
 
         // Finish drawing.
-        gpuFlush();
-        gpuFlushBuffer();
+        gpu::flushCommands();
+        gpu::flushBuffer();
 
-        if(inputIsPressed(BUTTON_SELECT)) {
+        if(hid::pressed(hid::BUTTON_SELECT)) {
             // Take a screenshot.
-            gputTakeScreenshot();
+            gput::takeScreenshot();
         }
 
         // Swap buffers, putting the newly drawn frame on-screen.
-        gpuSwapBuffers(true);
+        gpu::swapBuffers(true);
 
         // Perform FPS counting logic.
         fpsCounter++;
-        u64 since = platformGetTime() - lastfps;
+        u64 since = core::time() - lastfps;
         if(since >= 1000) {
             fps = fpsCounter;
             fpsCounter = 0;
-            lastfps = platformGetTime();
+            lastfps = core::time();
         }
     }
 
     // Delete the scene and clean up.
     delete(scene);
-    platformCleanup();
+
+    core::exit();
     return 0;
 }
