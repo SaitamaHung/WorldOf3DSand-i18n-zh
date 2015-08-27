@@ -14,7 +14,7 @@
 
 using namespace ctr;
 
-#define VERSION "1.3.2"
+#define VERSION "1.3.3"
 
 int main(int argc, char **argv) {
     if(!core::init(argc)) {
