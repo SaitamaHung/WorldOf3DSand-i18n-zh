@@ -14,8 +14,6 @@
 
 using namespace ctr;
 
-#define VERSION "1.3.3"
-
 int main(int argc, char **argv) {
     if(!core::init(argc)) {
         return 0;
@@ -287,7 +285,7 @@ int main(int argc, char **argv) {
 
         // Draw on-screen info.
         std::stringstream stream;
-        stream << "World of 3DSand v" << VERSION << "\n";
+        stream << "World of 3DSand " << VERSION_STRING << "\n";
         stream << "FPS: " << fps << "\n";
         stream << "Particle count: " << scene->GetParticleCount() << "\n";
         stream << "Selected Particle: " << selectedType->GetName() << "\n";
