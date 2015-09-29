@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
     ParticleType::InitParticles();
 
-    Scene *scene = new Scene(BOTTOM_WIDTH, BOTTOM_HEIGHT - 40);
+    Scene *scene = new Scene(gpu::BOTTOM_WIDTH, gpu::BOTTOM_HEIGHT - 40);
     ParticleType *selectedType = ParticleType::WALL;
 
     int penSize = 2;
@@ -225,8 +225,8 @@ int main(int argc, char **argv) {
         scene->Update();
 
         // Prepare to draw.
-        gpu::setViewport(gpu::SCREEN_BOTTOM, 0, 0, BOTTOM_WIDTH, BOTTOM_HEIGHT);
-        gput::setOrtho(0, BOTTOM_WIDTH, 0, BOTTOM_HEIGHT, -1, 1);
+        gpu::setViewport(gpu::SCREEN_BOTTOM, 0, 0, gpu::BOTTOM_WIDTH, gpu::BOTTOM_HEIGHT);
+        gput::setOrtho(0, gpu::BOTTOM_WIDTH, 0, gpu::BOTTOM_HEIGHT, -1, 1);
         gpu::clear();
 
         // Draw the game scene.
@@ -279,8 +279,8 @@ int main(int argc, char **argv) {
         gpu::flushBuffer();
 
         // Prepare to draw on-screen info.
-        gpu::setViewport(gpu::SCREEN_TOP, 0, 0, TOP_WIDTH, TOP_HEIGHT);
-        gput::setOrtho(0, TOP_WIDTH, 0, TOP_HEIGHT, -1, 1);
+        gpu::setViewport(gpu::SCREEN_TOP, 0, 0, gpu::TOP_WIDTH, gpu::TOP_HEIGHT);
+        gput::setOrtho(0, gpu::TOP_WIDTH, 0, gpu::TOP_HEIGHT, -1, 1);
         gpu::clear();
 
         // Draw on-screen info.
@@ -306,7 +306,7 @@ int main(int argc, char **argv) {
         stream << "\n";
         stream << "Emitter Density: " << emitDensity << "\n";
         stream << "\n" << controls;
-        gput::drawString(stream.str(), 0, TOP_HEIGHT - 1 - gput::getStringHeight(stream.str(), 8), 8, 8);
+        gput::drawString(stream.str(), 0, gpu::TOP_HEIGHT - 1 - gput::getStringHeight(stream.str(), 8), 8, 8);
 
         // Finish drawing.
         gpu::flushCommands();
