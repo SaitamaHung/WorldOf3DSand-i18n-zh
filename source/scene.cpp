@@ -12,7 +12,7 @@ Scene::Scene(int width, int height) {
     this->data = new u32[this->width * this->height]();
 
     gpu::createTexture(&this->texture);
-    gpu::setTextureInfo(this->texture, 512, 512, gpu::PIXEL_RGBA8, TEXTURE_MIN_FILTER(gpu::FILTER_NEAREST) | TEXTURE_MAG_FILTER(gpu::FILTER_NEAREST));
+    gpu::setTextureInfo(this->texture, 512, 512, gpu::PIXEL_RGBA8, gpu::textureMinFilter(gpu::FILTER_NEAREST) | gpu::textureMagFilter(gpu::FILTER_NEAREST));
     gpu::getTextureData(this->texture, (void**) &this->texturePixels);
 }
 
@@ -57,12 +57,12 @@ void Scene::SetParticle(int x, int y, ParticleType *type, u32 data) {
     this->data[index] = data;
     if(type != previousType) {
         if(type->IsDrawn()) {
-            this->texturePixels[TEXTURE_INDEX((u32) x, (u32) y, 512, 512)] = (u32) ((type->GetRed() << 24) | (type->GetGreen() << 16) | (type->GetBlue() << 8) | 0xFF);
+            this->texturePixels[gpu::textureIndex((u32) x, (u32) y, 512, 512)] = (u32) ((type->GetRed() << 24) | (type->GetGreen() << 16) | (type->GetBlue() << 8) | 0xFF);
             if((!previousType->IsDrawn() || previousType->IsStill()) && !type->IsStill()) {
                 this->particleCount++;
             }
         } else {
-            this->texturePixels[TEXTURE_INDEX((u32) x, (u32) y, 512, 512)] = 0;
+            this->texturePixels[gpu::textureIndex((u32) x, (u32) y, 512, 512)] = 0;
             if(previousType->IsDrawn() && !previousType->IsStill()) {
                 this->particleCount--;
             }

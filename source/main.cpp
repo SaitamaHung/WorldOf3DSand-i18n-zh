@@ -52,12 +52,12 @@ int main(int argc, char **argv) {
     void* gpuGuiTexture = gpu::galloc(gui_bin_size);
     memcpy(gpuGuiTexture, gui_bin, gui_bin_size);
     gpu::createTexture(&guiTexture);
-    gpu::setTextureData(guiTexture, gpuGuiTexture, 512, 64, gpu::PIXEL_RGBA8, TEXTURE_MIN_FILTER(gpu::FILTER_NEAREST) | TEXTURE_MAG_FILTER(gpu::FILTER_NEAREST));
+    gpu::setTextureData(guiTexture, gpuGuiTexture, 512, 64, gpu::PIXEL_RGBA8, gpu::textureMinFilter(gpu::FILTER_NEAREST) | gpu::textureMagFilter(gpu::FILTER_NEAREST));
     gpu::gfree(gpuGuiTexture);
 
     u32 dashboardVbo;
     gpu::createVbo(&dashboardVbo);
-    gpu::setVboAttributes(dashboardVbo, ATTRIBUTE(0, 3, gpu::ATTR_FLOAT) | ATTRIBUTE(1, 2, gpu::ATTR_FLOAT) | ATTRIBUTE(2, 4, gpu::ATTR_FLOAT), 3);
+    gpu::setVboAttributes(dashboardVbo, gpu::vboAttribute(0, 3, gpu::ATTR_FLOAT) | gpu::vboAttribute(1, 2, gpu::ATTR_FLOAT) | gpu::vboAttribute(2, 4, gpu::ATTR_FLOAT), 3);
 
     const float dashTexX1 = 0.0f;
     const float dashTexY1 = (64.0f - 40.0f) / 64.0f;
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 
     u32 selectorVbo;
     gpu::createVbo(&selectorVbo);
-    gpu::setVboAttributes(selectorVbo, ATTRIBUTE(0, 3, gpu::ATTR_FLOAT) | ATTRIBUTE(1, 2, gpu::ATTR_FLOAT) | ATTRIBUTE(2, 4, gpu::ATTR_FLOAT), 3);
+    gpu::setVboAttributes(selectorVbo, gpu::vboAttribute(0, 3, gpu::ATTR_FLOAT) | gpu::vboAttribute(1, 2, gpu::ATTR_FLOAT) | gpu::vboAttribute(2, 4, gpu::ATTR_FLOAT), 3);
 
     const float selectorTexX1 = 0.0f;
     const float selectorTexY1 = (64.0f - 52.0f) / 64.0f;
@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
 
     u32 sceneVbo = 0;
     gpu::createVbo(&sceneVbo);
-    gpu::setVboAttributes(sceneVbo, ATTRIBUTE(0, 3, gpu::ATTR_FLOAT) | ATTRIBUTE(1, 2, gpu::ATTR_FLOAT) | ATTRIBUTE(2, 4, gpu::ATTR_FLOAT), 3);
+    gpu::setVboAttributes(sceneVbo, gpu::vboAttribute(0, 3, gpu::ATTR_FLOAT) | gpu::vboAttribute(1, 2, gpu::ATTR_FLOAT) | gpu::vboAttribute(2, 4, gpu::ATTR_FLOAT), 3);
 
     const float sceneTexX1 = 0.0f;
     const float sceneTexY1 = (512.0f - scene->GetHeight()) / 512.0f;
