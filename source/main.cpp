@@ -49,8 +49,8 @@ int main(int argc, char **argv) {
     const std::string controls = controlStream.str();
 
     u32 guiTexture = 0;
-    void* gpuGuiTexture = gpu::galloc(gui_bin_size);
-    memcpy(gpuGuiTexture, gui_bin, gui_bin_size);
+    void* gpuGuiTexture = gpu::galloc(gui_bin_len);
+    memcpy(gpuGuiTexture, gui_bin, gui_bin_len);
     gpu::createTexture(&guiTexture);
     gpu::setTextureData(guiTexture, gpuGuiTexture, 512, 64, gpu::PIXEL_RGBA8, gpu::textureMinFilter(gpu::FILTER_NEAREST) | gpu::textureMagFilter(gpu::FILTER_NEAREST));
     gpu::gfree(gpuGuiTexture);
