@@ -285,7 +285,7 @@ int main(int argc, char **argv) {
 
         // Draw on-screen info.
         std::stringstream stream;
-        stream << "World of 3DSand " << VERSION_STRING << "\n";
+        stream << "World of 3DSand " << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_MICRO << "\n";
         stream << "FPS: " << fps << "\n";
         stream << "Particle count: " << scene->GetParticleCount() << "\n";
         stream << "Selected Particle: " << selectedType->GetName() << "\n";
