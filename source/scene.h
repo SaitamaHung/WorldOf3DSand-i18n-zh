@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-#include <citrus/types.hpp>
+#include <citro3d.h>
 
 class ParticleType;
 
@@ -27,8 +27,8 @@ public:
         return this->particleCount;
     }
 
-    u32 GetTexture() {
-        return this->texture;
+    C3D_Tex* GetTexture() {
+        return &this->texture;
     }
 
     ParticleType* GetParticle(int x, int y);
@@ -49,11 +49,12 @@ private:
     int particleCount;
     ParticleType** particles;
     u32* data;
-    u32 texture;
-    u32* texturePixels;
+    C3D_Tex texture;
 
     bool HasMoved(int x, int y);
     void UpdateParticle(int x, int y);
+
+    u32 GetTiledTextureIndex(u32 x, u32 y, u32 w, u32 h);
 };
 
 #endif

@@ -24,8 +24,8 @@ SOURCE_DIRS := source
 
 EXTRA_OUTPUT_FILES :=
 
-LIBRARY_DIRS := $(DEVKITPRO)/citrus $(DEVKITPRO)/libctru
-LIBRARIES := citrus ctru m
+LIBRARY_DIRS := $(DEVKITPRO)/libctru
+LIBRARIES := citro3d ctru m
 
 BUILD_FLAGS :=
 RUN_FLAGS :=

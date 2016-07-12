@@ -1,9 +1,5 @@
 #include "scene.h"
 
-#include <citrus/gpu.hpp>
-
-using namespace ctr;
-
 Scene::Scene(int width, int height) {
     this->width = width;
     this->height = height;
@@ -11,12 +7,13 @@ Scene::Scene(int width, int height) {
     this->particles = new ParticleType*[this->width * this->height]();
     this->data = new u32[this->width * this->height]();
 
-    gpu::createTexture(&this->texture);
-    gpu::setTextureInfo(this->texture, 512, 512, gpu::PIXEL_RGBA8, gpu::textureMinFilter(gpu::FILTER_NEAREST) | gpu::textureMagFilter(gpu::FILTER_NEAREST));
-    gpu::getTextureData(this->texture, (void**) &this->texturePixels);
+    memset(&this->texture, 0, sizeof(this->texture));
+    C3D_TexInit(&this->texture, 512, 512, GPU_RGBA8);
 }
 
 Scene::~Scene() {
+    C3D_TexDelete(&this->texture);
+
     delete(this->particles);
     delete(this->data);
 }
@@ -46,6 +43,10 @@ void Scene::SetParticle(int x, int y, ParticleType *type) {
     this->SetParticle(x, y, type, 0);
 }
 
+u32 Scene::GetTiledTextureIndex(u32 x, u32 y, u32 w, u32 h) {
+    return (((y >> 3) * (w >> 3) + (x >> 3)) << 6) + ((x & 1) | ((y & 1) << 1) | ((x & 2) << 1) | ((y & 2) << 2) | ((x & 4) << 2) | ((y & 4) << 3));
+}
+
 void Scene::SetParticle(int x, int y, ParticleType *type, u32 data) {
     if(x < 0 || y < 0 || x >= this->width || y >= this->height) {
         return;
@@ -57,12 +58,12 @@ void Scene::SetParticle(int x, int y, ParticleType *type, u32 data) {
     this->data[index] = data;
     if(type != previousType) {
         if(type->IsDrawn()) {
-            this->texturePixels[gpu::textureIndex((u32) x, (u32) y, 512, 512)] = (u32) ((type->GetRed() << 24) | (type->GetGreen() << 16) | (type->GetBlue() << 8) | 0xFF);
+            ((u32*) this->texture.data)[GetTiledTextureIndex((u32) x, (u32) (511 - y), 512, 512)] = (u32) ((type->GetRed() << 24) | (type->GetGreen() << 16) | (type->GetBlue() << 8) | 0xFF);
             if((!previousType->IsDrawn() || previousType->IsStill()) && !type->IsStill()) {
                 this->particleCount++;
             }
         } else {
-            this->texturePixels[gpu::textureIndex((u32) x, (u32) y, 512, 512)] = 0;
+            ((u32*) this->texture.data)[GetTiledTextureIndex((u32) x, (u32) (511 - y), 512, 512)] = 0;
             if(previousType->IsDrawn() && !previousType->IsStill()) {
                 this->particleCount--;
             }
