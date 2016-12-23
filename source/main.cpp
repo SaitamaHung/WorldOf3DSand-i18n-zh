@@ -122,10 +122,10 @@ int main(int argc, char **argv) {
     C3D_DepthTest(true, GPU_GEQUAL, GPU_WRITE_ALL);
 
     C3D_Mtx bottomProjection;
-    Mtx_OrthoTilt(&bottomProjection, 0.0, 320.0, 240.0, 0.0, 0.0, 1.0);
+    Mtx_OrthoTilt(&bottomProjection, 0.0, 320.0, 240.0, 0.0, 0.0, 1.0, true);
 
     C3D_Mtx topProjection;
-    Mtx_OrthoTilt(&topProjection, 0.0, 400.0, 240.0, 0.0, 0.0, 1.0);
+    Mtx_OrthoTilt(&topProjection, 0.0, 400.0, 240.0, 0.0, 0.0, 1.0, true);
 
     if(R_SUCCEEDED(fontEnsureMapped())) {
         TGLP_s* glyphInfo = fontGetGlyphInfo();
